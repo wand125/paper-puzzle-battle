@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Honey Islands Battle is Solved</title>
+<meta name="description" content="Honey Islands Battle, a two-player game played on the solution set of a logic puzzle, is solved: the first player wins under both rules.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="paper.css">
+<script type="module" src="paper.js"></script>
+</head>
+<body>
+<main>
+<div class="languages"><button type="button" data-language="en">EN</button> | <button type="button" data-language="ja">日本語</button></div>
+
+<!-- ======================================================= English -->
+<article lang="en" data-lang="en">
+<header>
+<p class="overline">COMPUTATIONAL GAME STUDY · 2026-10-22</p>
+<h1>Honey Islands Battle is Solved</h1>
+<p class="lead">A two-player game in which the players narrow down the 1,304,983 solutions of a logic puzzle. The first player wins, both under the standard rule and under a rule that allows passing.</p>
+<p class="links"><a href="play/">Play and analyze</a> · <a href="https://github.com/wand125/paper-puzzle-battle/tree/main/honeyislands">Source and data</a></p>
+</header>
+
+<nav aria-label="Contents"><a href="#abstract">Abstract</a><a href="#intro">1 Introduction</a><a href="#rules">2 Rules</a><a href="#state">3 Positions</a><a href="#method">4 Method</a><a href="#results">5 Results</a><a href="#verify">6 Verification</a><a href="#pass">7 The pass paradox</a><a href="#ai">8 AI and book</a><a href="#limits">9 Limitations</a><a href="#repro">Reproducibility</a><a href="#refs">References</a></nav>
+
+<section id="abstract">
+<h2>Abstract</h2>
+<p>Honey Islands is a hexagonal logic puzzle on 61 cells. Its puzzle space has exactly <strong>1,304,983</strong> solutions. In <em>Honey Islands Battle</em> two players alternately place black stones on undetermined cells; each stone discards the solutions in which that cell is white, and the player whose stone leaves exactly one solution wins. We solve the initial position under two rules. Under the <strong>standard rule</strong> the first player wins; 42 of the 61 first moves win. Under the <strong>pass rule</strong>, where stones may also go on cells already determined black, the first player wins with <strong>every</strong> first move.</p>
+<p>The key observation is that a position is determined by its set of determined-black cells, which gives an exact, symmetry-reducible transposition key. We solved all 3,122 symmetry-distinct positions after three moves with a bitset negamax solver and backed the values up to the root (58.8 billion search nodes, 121.7 CPU-hours for the standard rule; 2.65 billion, 7.0 CPU-hours for the pass rule). An independently written checker confirms the pass-rule result from the root down. The pass rule offers more moves yet needs 1/22 of the search; winning moves are about twice as dense there.</p>
+<p class="result">First player wins (standard rule: 42 of 61 first moves; pass rule: all 61)</p>
+</section>
+
+<section id="intro">
+<h2>1. Introduction</h2>
+<p>Every logic puzzle with a fixed board has a set of solutions. Hints narrow that set down; a well-posed puzzle ends with exactly one. Honey Islands Battle turns that process into a game: the players supply the hints. It is a game of pure information with no hidden state and no chance, so it has a definite value. Determining that value is what it means to solve a game <a href="#r-allis">[1]</a>; a recent example is Othello <a href="#r-takizawa">[2]</a>.</p>
+<p>The puzzle and its complete solution set come from the author's <em>Honey Islands real-time solver</em> (ハニーアイランドリアルタイムソルバ), which enumerates all solutions. This study takes that set as given (Section 6 lists the checks we ran on it) and contributes:</p>
+<ul>
+<li>the values of the initial position and of every first move under two rules;</li>
+<li>a proof that the determined-black mask is an exact position key, which makes the game tractable;</li>
+<li>an independent re-solve of the pass-rule proof;</li>
+<li>an analysis of why the pass rule, despite having more moves, is much easier to solve;</li>
+<li>a WebAssembly game and analysis tool that uses the opening book.</li>
+</ul>
+</section>
+
+<section id="rules">
+<h2>2. Rules</h2>
+<h3>2.1 The puzzle space</h3>
+<p>The board is a hexagon of radius 4: 61 cells. A solution colors 25 cells black so that the white cells form six islands of six cells each. There are 1,304,983 solutions, and the set is closed under the 12 symmetries of the hexagon.</p>
+<h3>2.2 Standard rule</h3>
+<p>Let <var>S</var> be the set of solutions still possible; initially all of them. A cell is <em>determined black</em> if it is black in every solution of <var>S</var>, <em>determined white</em> if it is white in every one, and <em>undetermined</em> otherwise. On their turn a player places a black stone on an undetermined cell <var>c</var>, and <var>S</var> becomes {<var>s</var> ∈ <var>S</var> : <var>c</var> is black in <var>s</var>}. The player whose stone makes |<var>S</var>| = 1 wins; equivalently, the player to move in a position with one solution has lost. A legal move never empties <var>S</var>, and the game ends after at most 61 moves.</p>
+<h3>2.3 Pass rule</h3>
+<p>Stones may also be placed on determined-black cells that carry no stone yet. Such a move leaves <var>S</var> unchanged and only passes the turn. The number of passes available is <var>p</var> = |<var>D</var>(<var>S</var>)| − (stones placed), where <var>D</var>(<var>S</var>) is the set of determined-black cells. Stones on determined-white cells remain illegal, since they would leave no solution.</p>
+</section>
+
+<section id="state">
+<h2>3. Positions</h2>
+<p><strong>Proposition.</strong> Let <var>D</var> = <var>D</var>(<var>S</var>) be the determined-black mask of a reachable set <var>S</var>. Then <var>S</var> = {<var>s</var> : <var>D</var> ⊆ <var>s</var>}, where <var>s</var> ranges over all solutions and is identified with its set of black cells.</p>
+<p><em>Proof.</em> A reachable <var>S</var> is {<var>s</var> : <var>T</var> ⊆ <var>s</var>} for the set <var>T</var> of stones placed. Every <var>s</var> ∈ <var>S</var> contains <var>D</var> by definition of <var>D</var>. Conversely, <var>T</var> ⊆ <var>D</var> because every stone is black in every remaining solution, so any <var>s</var> ⊇ <var>D</var> contains <var>T</var> and lies in <var>S</var>. ∎</p>
+<p>Consequently <var>D</var> is an exact transposition key for the standard rule, and (<var>D</var>, <var>p</var>) for the pass rule. Different stone sets that determine the same cells merge, and so do positions related by a symmetry: we use the smallest of the 12 images of <var>D</var>, computed with byte lookup tables, as the canonical key. After three moves there are 3,122 canonical positions under both rules. Under the pass rule exactly one of them has a pass available.</p>
+</section>
+
+<section id="method">
+<h2>4. Method</h2>
+<h3>4.1 Solver</h3>
+<p>The solver is an exact win/loss negamax in Rust. At the start of a job it re-indexes the job's own solutions and stores, for each cell, a bitset of the solutions in which that cell is black. A sub-position is a sparse list of bitset words, kept in one scratch region per search depth, and a child is obtained with a bitwise AND. Cell counts are popcounts. Two cheap rules prune the search. A child with one solution is an immediate win. A child with two solutions is never played, because the opponent then wins at once. The remaining moves are tried smallest child first. Values are cached in a lock-free transposition table shared by all threads of a process, keyed by the canonical mask.</p>
+<h3>4.2 Opening-book decomposition</h3>
+<p>We enumerated every position up to depth 3 together with the edges between them, and solved each of the 3,122 depth-3 positions as an independent job. Values were backed up by negamax: a position wins if and only if some child loses. While solving, the values of large positions (at least 3,000 solutions) were exported. These files were merged every 30 minutes and distributed to all workers, so machines did not re-solve each other's sub-positions. Once the root was decided, positions it no longer needed were postponed, and the rest were ordered by proof numbers. All 3,122 positions were still solved to complete the book.</p>
+<h3>4.3 Computation</h3>
+<p>The standard rule ran on 2026-10-22 on two home PCs and two cloud virtual machines that had spare capacity. It took 121.7 CPU-hours and 58.8 billion search nodes, and 3,523,789 large positions were shared between machines. The pass rule ran afterwards on one home PC: 7.0 CPU-hours and 2.65 billion nodes, with 203,010 shared positions.</p>
+</section>
+
+<section id="results">
+<h2>5. Results</h2>
+<div class="scroll"><table>
+<caption>Values by depth (canonical positions; “win” = the player to move wins)</caption>
+<thead><tr><th>Depth</th><th>Positions</th><th>Standard: win / loss</th><th>Pass rule: win / loss</th></tr></thead>
+<tbody>
+<tr><td>0 (initial)</td><td>1</td><td>1 / 0</td><td>1 / 0</td></tr>
+<tr><td>1</td><td>9</td><td>3 / 6</td><td>0 / 9</td></tr>
+<tr><td>2</td><td>180</td><td>175 / 5</td><td>180 / 0</td></tr>
+<tr><td>3</td><td>3,122</td><td>2,650 / 472</td><td>137 / 2,985</td></tr>
+</tbody></table></div>
+<p>Under the standard rule, 6 of the 9 canonical first moves win for the first player. Over the 61 cells these are 42 winning and 19 losing first moves. Under the pass rule, every first move wins. After any reply, the first player can again move to a lost position: 98.5% of all depth-3 positions are lost for the player to move.</p>
+<figure>
+<div class="boards"><div><svg id="map-normal-en" class="hexmap" viewBox="0 0 100 92" role="img" aria-label="Winning and losing first moves, standard rule"></svg><p>Standard rule</p></div><div><svg id="map-pass-en" class="hexmap" viewBox="0 0 100 92" role="img" aria-label="Winning and losing first moves, pass rule"></svg><p>Pass rule</p></div></div>
+<figcaption><span class="sw win"></span> first move wins <span class="sw loss"></span> first move loses. Data: <a href="results/normal/first-moves.json">standard</a>, <a href="results/pass/first-moves.json">pass rule</a>.</figcaption>
+</figure>
+</section>
+
+<section id="verify">
+<h2>6. Verification</h2>
+<p><strong>Independent checker.</strong> <code>verify/</code> is a second solver written from the rules alone. It does not depend on or copy the main engine and uses only the Rust standard library. It uses no symmetry and no shared tables, and keys its table by the raw mask <var>D</var> (or <var>D</var>, <var>p</var>). Its own tests compare it with a plain recursive reference on 200 random small positions per rule.</p>
+<p><strong>Pass rule: confirmed.</strong> From the book values we chose a proof set: for each depth-1 position, one losing child where one suffices, all children where all are needed, down to depth 3. This gave 164 depth-3 positions. The checker re-solved all 164: every value agrees, and from them alone it follows that the initial position and all nine depth-1 positions have the book's values (570 million nodes, 4.4 minutes on one thread).</p>
+<p><strong>Standard rule: partial.</strong> The corresponding proof set has 201 positions. The checker agreed on all 71 it finished before we stopped it. Without shared tables and symmetry it was about 47 times slower than the book solve, so the full check would have taken several days on the capacity available. The standard-rule result therefore rests on the main solver. Within the main computation, 601 depth-3 positions were solved twice in separate runs after jobs were reassigned, and every pair agrees. We cross-checked the main solver against a JavaScript reference solver on small positions, and the main solver's pass-rule mode against a plain reference implementation on 13 small positions.</p>
+<p><strong>Data.</strong> The solution file was converted from the real-time solver's output. Its count, the 25/6×6 structure and its closure under the 12 symmetries were checked (<code>tools/convert.py</code>, <code>tools/symcheck.py</code>).</p>
+</section>
+
+<section id="pass">
+<h2>7. The pass paradox</h2>
+<p>The pass rule only adds moves, yet it was solved with 1/22 of the search nodes (2.65 versus 58.8 billion). The cost of the standard rule is concentrated in lost positions: a lost depth-3 position took 71.9 million nodes on average under the standard rule but 0.9 million under the pass rule. The heaviest 5% of standard-rule positions account for 49% of all its nodes. The search also gets narrower under the pass rule:</p>
+<div class="scroll"><table>
+<thead><tr><th></th><th>Standard</th><th>Pass rule</th></tr></thead>
+<tbody>
+<tr><td>moves tried before a win is found</td><td>16–22</td><td>11–14</td></tr>
+<tr><td>moves refuted in a lost position</td><td>25–28</td><td>14–17</td></tr>
+<tr><td>share of winning moves in winning positions*</td><td>6%</td><td>11%</td></tr>
+<tr><td>player to move wins, 3,000–30,000 solutions*</td><td>93% (28/30)</td><td>48% (14/29)</td></tr>
+</tbody></table></div>
+<p class="note">Rows marked * use positions from random games, solved exactly with every move (<code>hib moves</code>): 2,000 positions with 200–3,000 solutions, and 30 positions with 3,000–30,000 solutions (a small sample).</p>
+<p>Two effects combine. Winning moves are about twice as dense, so a win is found sooner. Lost positions, which require refuting every move, have fewer real alternatives to refute; a pass is a single extra move. We also traced individual cases. Where a value differs between the rules, the deciding reply is usually a regular move, and passes matter later in the line.</p>
+<p><strong>A parity hypothesis, and what the data say.</strong> One explanation is that a move that determines many black cells shifts the parity of the remaining game, but under the pass rule each such cell is also a pass that the opponent can use to shift it back. This predicts that, under the standard rule, winning moves determine more cells than losing moves, and that the bias disappears under the pass rule. In the first three moves no move determines more than its own cell, so we measured late positions. In aggregate, winning moves determine on average 1.49 cells versus 1.29 for losing moves under the standard rule, and 1.34 versus 1.32 under the pass rule. That matches the prediction. Position by position, however, the two rules look alike: in most positions the winning moves determine slightly fewer cells, and the averages are driven by rare moves that determine eight or more cells (16% of which win under both rules). We regard the hypothesis as weakly supported at best.</p>
+</section>
+
+<section id="ai">
+<h2>8. AI and opening book</h2>
+<p><strong>Search.</strong> Random playouts barely predict the true value: their AUC was 0.53–0.62. Monte Carlo tree search therefore adds little, and playing strength comes from exact solving. The AI spends most of its time proving moves smallest child first, and uses an MCTS-Solver <a href="#r-winands">[3]</a> for the rest. The Rust/WebAssembly engine solves about 3.6 times faster than our earlier JavaScript engine. Against the earlier AI it scored 25/48 at 1 second per move and 15/20 at 3 seconds.</p>
+<p><strong>Book.</strong> The AI first checks a book of 222,865 positions for the standard rule (2.2 MB) and 71,721 for the pass rule (0.7 MB). The book holds every position up to depth 3, the winning depth-4 replies, and the shared positions with at most five determined-black cells. If some move leads to a recorded loss for the opponent, the AI plays it at once, choosing at random among such moves. When the opponent moves after a lost depth-3 position, the book holds a winning reply in 87% of cases under the standard rule and 57% under the pass rule; allowing six cells barely changes this. With the book, the AI as first player won 5 of 5 games against the same AI without the book under both rules (1 second per move). As second player it won 3 of 5.</p>
+</section>
+
+<section id="limits">
+<h2>9. Limitations and future work</h2>
+<ul>
+<li><strong>Standard-rule verification</strong> is partial (71 of 201 positions); completing it needs either much more time or a shared table in the checker.</li>
+<li><strong>Perfect-play line.</strong> We implemented an exact game-length search, in which the winner finishes fastest and the loser resists longest. It agrees with plain minimax on 160 small positions, but it is too slow above roughly 10<sup>4</sup> solutions. A full perfect-play line from the initial position remains open.</li>
+<li><strong>Depth of proofs and timing of passes</strong> under the two rules (how deep the decisive reading goes, and at which ply passes occur in perfect play) have not been measured yet.</li>
+<li>Late-game statistics come from positions reached by random games, which are not the positions that arise in perfect play.</li>
+</ul>
+</section>
+
+<section id="repro">
+<h2>Reproducibility</h2>
+<pre><code>export CARGO_TARGET_DIR="$PWD/rust/target"
+cargo test  --release --offline --manifest-path rust/Cargo.toml
+cargo build --release --offline --manifest-path rust/Cargo.toml
+cargo test  --release --offline --manifest-path verify/Cargo.toml
+tools/build-wasm.sh &amp;&amp; npm test
+# independent check of the pass-rule proof set (about 5 minutes)
+verify/target/release/hibverify solve pass results/pass/verify-proofset-jobs.txt /tmp/res.txt 1
+python3 tools/analysis/verify_compare.py results/pass /tmp/res.txt</code></pre>
+<p>Results: <code>results/&lt;rule&gt;/positions.txt</code> (positions up to depth 3), <code>edges.txt</code>, <code>depth3-results.txt</code> (key, value, winning move, solutions, ms, nodes, stones), <code>winkeys.txt</code>, and the verifier outputs.</p>
+</section>
+
+<section id="refs">
+<h2>References</h2>
+<ol>
+<li id="r-allis">L. V. Allis. <em>Searching for Solutions in Games and Artificial Intelligence.</em> PhD thesis, University of Limburg, 1994.</li>
+<li id="r-takizawa">H. Takizawa. Othello is Solved. arXiv:2310.19387, 2023.</li>
+<li id="r-winands">M. H. M. Winands, Y. Björnsson, J.-T. Saito. Monte-Carlo Tree Search Solver. <em>Computers and Games</em>, 2008.</li>
+</ol>
+</section>
+</article>
+
+<!-- ======================================================= 日本語 -->
+<article lang="ja" data-lang="ja" hidden>
+<header>
+<p class="overline">計算ゲーム研究 · 2026-10-22</p>
+<h1>ハニーアイランド・バトルを解く</h1>
+<p class="lead">論理パズルの 1,304,983 通りの解を 2 人で絞り込んでいく対戦ゲーム。標準ルールでも、パスを認めるルールでも、先手が勝つ。</p>
+<p class="links"><a href="play/">対戦・解析ツール</a> · <a href="https://github.com/wand125/paper-puzzle-battle/tree/main/honeyislands">ソースとデータ</a></p>
+</header>
+
+<nav aria-label="目次"><a href="#ja-abstract">要旨</a><a href="#ja-intro">1 導入</a><a href="#ja-rules">2 ルール</a><a href="#ja-state">3 局面</a><a href="#ja-method">4 方法</a><a href="#ja-results">5 結果</a><a href="#ja-verify">6 検証</a><a href="#ja-pass">7 パスの逆説</a><a href="#ja-ai">8 AI と定石</a><a href="#ja-limits">9 限界</a><a href="#ja-repro">再現方法</a><a href="#ja-refs">参考文献</a></nav>
+
+<section id="ja-abstract">
+<h2>要旨</h2>
+<p>ハニーアイランドは 61 マスの六角形の盤で解く論理パズルで、解はちょうど <strong>1,304,983</strong> 通りある。<em>ハニーアイランド・バトル</em>では、2 人が交互に、まだ色が決まっていないマスへ黒石を置く。石を置くたびに、そのマスが白の解が消える。解をちょうど 1 つにした人の勝ちである。初期局面を 2 つのルールで解いた。<strong>標準ルール</strong>では先手が勝ち、初手 61 マスのうち 42 マスが勝ちの手である。黒に確定したマスにも石を置ける<strong>パスありルール</strong>では、先手は<strong>どの初手でも</strong>勝つ。</p>
+<p>鍵となる観察は、局面が「黒に確定したマスの集合」だけで決まることである。これにより、対称性でまとめられる正確な置換表キーが得られる。3 手目のあとの対称性で異なる 3,122 局面をビットセットの negamax ソルバーですべて読み切り、初期局面まで勝敗をさかのぼった。標準ルールは探索 588 億局面・121.7 CPU 時間、パスありは 26.5 億局面・7.0 CPU 時間である。別に書いた検算プログラムで、パスありの結果を初期局面から確認した。パスありは打てる手が多いのに、探索は 1/22 で済む。勝ち手の割合が約 2 倍あるためである。</p>
+<p class="result">先手必勝（標準ルール：初手 61 マス中 42 マス、パスあり：61 マスすべて）</p>
+</section>
+
+<section id="ja-intro">
+<h2>1. 導入</h2>
+<p>盤の決まった論理パズルには、どれも解の集合がある。ヒントはその集合を絞り込み、よくできた問題は最後に解が 1 つになる。ハニーアイランド・バトルは、この過程を対戦にしたもので、ヒントを出すのが 2 人のプレイヤーになる。隠れた情報も偶然もないので、ゲームの値は必ず決まる。その値を求めることを、ゲームを解くという <a href="#ja-r-allis">[1]</a>。最近の例にオセロがある <a href="#ja-r-takizawa">[2]</a>。</p>
+<p>パズルとその全解は、筆者の<em>ハニーアイランドリアルタイムソルバ</em>による。本研究はこの解の集合を前提とし（確認した内容は 6 節）、次のものを示す。</p>
+<ul>
+<li>2 つのルールでの、初期局面とすべての初手の勝敗</li>
+<li>確定黒マスの集合が局面を正確に表すことの証明（これがゲームを解ける大きさにする）</li>
+<li>パスありルールの証明の、独立したプログラムによる解き直し</li>
+<li>打てる手が多いパスありルールの方が、はるかに解きやすい理由の分析</li>
+<li>定石を使う WebAssembly の対戦・解析ツール</li>
+</ul>
+</section>
+
+<section id="ja-rules">
+<h2>2. ルール</h2>
+<h3>2.1 パズルの解</h3>
+<p>盤は半径 4 の六角形で 61 マス。解は 25 マスを黒に塗り、白マスを 6 マスの島 6 つに分ける塗り方である。解は 1,304,983 通りあり、六角形の 12 通りの対称性で閉じている。</p>
+<h3>2.2 標準ルール</h3>
+<p>まだ可能な解の集合を <var>S</var> とする（最初は全解）。<var>S</var> のすべての解で黒のマスを<em>黒に確定</em>、すべてで白のマスを<em>白に確定</em>、それ以外を<em>未確定</em>と呼ぶ。手番の人は未確定のマス <var>c</var> に黒石を置き、<var>S</var> は {<var>s</var> ∈ <var>S</var> : <var>s</var> で <var>c</var> が黒} になる。|<var>S</var>| = 1 にした人の勝ちで、言い換えると、解が 1 つの局面で手番の人は負けている。合法手で <var>S</var> が空になることはなく、ゲームは高々 61 手で終わる。</p>
+<h3>2.3 パスありルール</h3>
+<p>黒に確定していて、まだ石のないマスにも置ける。この手は <var>S</var> を変えず、手番だけを渡す（パス）。使えるパスの数は <var>p</var> = |<var>D</var>(<var>S</var>)| −（置いた石の数）で、<var>D</var>(<var>S</var>) は確定黒マスの集合である。白に確定したマスには置けない。置くと解がなくなるからである。</p>
+</section>
+
+<section id="ja-state">
+<h2>3. 局面</h2>
+<p><strong>命題.</strong> 到達可能な <var>S</var> の確定黒マスの集合を <var>D</var> = <var>D</var>(<var>S</var>) とする。このとき <var>S</var> = {<var>s</var> : <var>D</var> ⊆ <var>s</var>} である（<var>s</var> は全解を動き、黒マスの集合と同一視する）。</p>
+<p><em>証明.</em> 到達可能な <var>S</var> は、置いた石の集合 <var>T</var> について {<var>s</var> : <var>T</var> ⊆ <var>s</var>} である。<var>D</var> の定義から、<var>S</var> のどの解も <var>D</var> を含む。逆に、石は残りのすべての解で黒なので <var>T</var> ⊆ <var>D</var> であり、<var>D</var> を含む解は <var>T</var> を含むので <var>S</var> に属する。∎</p>
+<p>したがって、標準ルールでは <var>D</var>、パスありでは (<var>D</var>, <var>p</var>) が正確な置換表キーになる。同じマスを確定させる異なる石の置き方は 1 つにまとまり、対称な局面もまとまる。<var>D</var> の 12 通りの像のうち最小のもの（バイト単位の表引きで計算）を正規キーとした。3 手目のあとの正規局面は、どちらのルールでも 3,122 個である。パスありでは、そのうちちょうど 1 局面でパスが使える。</p>
+</section>
+
+<section id="ja-method">
+<h2>4. 方法</h2>
+<h3>4.1 ソルバー</h3>
+<p>Rust による勝敗の negamax 完全読みである。各ジョブの最初に、そのジョブの解だけで番号を振り直し、マスごとに「そのマスが黒の解」のビットセットを作る。部分局面はビットセットの語の疎なリストで、探索の深さごとに 1 つの作業領域に置く。子局面はビット AND で得る。マスごとの数はポップカウントで数える。枝刈りは安い規則 2 つで行う。解が 1 つになる子は即勝ち。解が 2 つになる子は相手がすぐ勝つので打たない。残りの手は子の小さい順に試す。値はプロセス内の全スレッドで共有するロックフリーの置換表に、正規キーで記録する。</p>
+<h3>4.2 定石への分割</h3>
+<p>深さ 3 までの全局面とそのつながりを列挙し、深さ 3 の 3,122 局面をそれぞれ独立したジョブとして解いた。勝敗は negamax でさかのぼった（子のどれかが負けなら勝ち）。解いている間、大きな局面（解 3,000 通り以上）の勝敗を書き出した。これを 30 分ごとにまとめて全台へ配り、他のマシンが解いた部分局面を解き直さないようにした。初期局面が決まったあとは、その証明に要らない局面を後回しにし、残りは証明数の順に解いた。定石を完成させるため、最終的には 3,122 局面すべてを解いた。</p>
+<h3>4.3 計算</h3>
+<p>標準ルールは 2026-10-22 に、空いていた家庭の PC 2 台とクラウドの仮想マシン 2 台で計算した。121.7 CPU 時間・588 億局面で、マシン間で共有した大きな局面は 3,523,789 個である。パスありはその後、家庭の PC 1 台で計算した。7.0 CPU 時間・26.5 億局面で、共有した局面は 203,010 個である。</p>
+</section>
+
+<section id="ja-results">
+<h2>5. 結果</h2>
+<div class="scroll"><table>
+<caption>深さごとの勝敗（正規局面の数。「勝ち」は手番の人の勝ち）</caption>
+<thead><tr><th>深さ</th><th>局面数</th><th>標準：勝ち / 負け</th><th>パスあり：勝ち / 負け</th></tr></thead>
+<tbody>
+<tr><td>0（初期局面）</td><td>1</td><td>1 / 0</td><td>1 / 0</td></tr>
+<tr><td>1</td><td>9</td><td>3 / 6</td><td>0 / 9</td></tr>
+<tr><td>2</td><td>180</td><td>175 / 5</td><td>180 / 0</td></tr>
+<tr><td>3</td><td>3,122</td><td>2,650 / 472</td><td>137 / 2,985</td></tr>
+</tbody></table></div>
+<p>標準ルールでは、正規化した初手 9 通りのうち 6 通りが先手の勝ちで、61 マスで数えると勝ち 42、負け 19 である。パスありでは、どの初手も勝つ。相手がどう応じても、先手は再び相手の負け局面へ進められる。深さ 3 の局面の 98.5% が手番の人の負けである。</p>
+<figure>
+<div class="boards"><div><svg id="map-normal-ja" class="hexmap" viewBox="0 0 100 92" role="img" aria-label="初手の勝ち負け（標準ルール）"></svg><p>標準ルール</p></div><div><svg id="map-pass-ja" class="hexmap" viewBox="0 0 100 92" role="img" aria-label="初手の勝ち負け（パスあり）"></svg><p>パスあり</p></div></div>
+<figcaption><span class="sw win"></span>勝つ初手 <span class="sw loss"></span>負ける初手。データ：<a href="results/normal/first-moves.json">標準</a>、<a href="results/pass/first-moves.json">パスあり</a>。</figcaption>
+</figure>
+</section>
+
+<section id="ja-verify">
+<h2>6. 検証</h2>
+<p><strong>独立した検算プログラム.</strong> <code>verify/</code> はルールだけから書いた 2 つ目のソルバーで、本体のエンジンに依存せず、コードも流用していない。Rust の標準ライブラリだけを使う。対称性も共有表も使わず、置換表のキーは生の <var>D</var>（または <var>D</var>, <var>p</var>）である。自身のテストで、ルールごとにランダムな小局面 200 個を素朴な再帰の参照実装と照合している。</p>
+<p><strong>パスあり：確認済み.</strong> 定石の値から証明に必要な局面の集合を選んだ。深さ 1 の各局面から、1 つで足りるところは負けの子を 1 つ、すべて必要なところは子をすべて、深さ 3 までたどった。その結果が 164 局面である。検算プログラムは 164 局面をすべて解き直し、値はすべて一致した。この 164 局面だけから、初期局面と深さ 1 の 9 局面がすべて定石と同じ値になることが従う（5.7 億局面、1 スレッドで 4.4 分）。</p>
+<p><strong>標準ルール：一部のみ.</strong> 対応する証明の集合は 201 局面である。止めるまでに終えた 71 局面はすべて一致した。共有表と対称性がないため定石計算の約 47 倍遅く、空いている計算資源では全部の確認に数日かかる見込みだった。このため標準ルールの結果は本体のソルバーに依拠する。なお本計算では、ジョブの割り当て直しにより 601 局面が別々の実行で 2 回解かれ、値はすべて一致した。本体のソルバーは、小さな局面で JavaScript の参照ソルバーと照合し、パスありモードは素朴な参照実装と 13 局面で照合した。</p>
+<p><strong>データ.</strong> 解のファイルはリアルタイムソルバの出力から変換した。件数、黒 25・白 6×6 の構造、12 通りの対称性で閉じていることを確認した（<code>tools/convert.py</code>、<code>tools/symcheck.py</code>）。</p>
+</section>
+
+<section id="ja-pass">
+<h2>7. パスの逆説</h2>
+<p>パスありルールは手を増やすだけなのに、探索した局面は 1/22（26.5 億 対 588 億）で済んだ。標準ルールの重さは負け局面に集中している。深さ 3 の負け局面 1 つあたり、標準では平均 7,190 万局面かかったのに対し、パスありでは 90 万局面だった。標準ルールでは、重い方から 5% の局面が全探索の 49% を占める。探索の幅もパスありの方が狭い。</p>
+<div class="scroll"><table>
+<thead><tr><th></th><th>標準</th><th>パスあり</th></tr></thead>
+<tbody>
+<tr><td>勝ち手が見つかるまでに試す手</td><td>16〜22</td><td>11〜14</td></tr>
+<tr><td>負け局面で反論する手</td><td>25〜28</td><td>14〜17</td></tr>
+<tr><td>勝ち局面のうち勝ち手の割合*</td><td>6%</td><td>11%</td></tr>
+<tr><td>解 3,000〜30,000 で手番の人が勝つ割合*</td><td>93%（28/30）</td><td>48%（14/29）</td></tr>
+</tbody></table></div>
+<p class="note">* の行は、ランダムな対局で出た局面を、すべての手について読み切ったもの（<code>hib moves</code>）。解 200〜3,000 通りの 2,000 局面と、解 3,000〜30,000 通りの 30 局面（少数標本）。</p>
+<p>2 つの効果が重なっている。勝ち手が約 2 倍あるので、勝ちが早く見つかる。すべての手に反論が必要な負け局面では、反論すべき実質的な手が少ない。パスは手が 1 つ増えるだけである。個々の例もたどった。ルールによって勝敗が変わる局面では、決め手となる応手はたいてい通常の手で、パスが効くのはもっと先の局面である。</p>
+<p><strong>偶奇の仮説と、データが示すこと.</strong> 説明の候補として次の仮説がある。黒を多く確定させる手は残りの手数の偶奇を動かす。しかしパスありでは、確定したマスはそれぞれ相手も使えるパスになり、相手はそれで偶奇を戻せる。この仮説からは、標準ルールでは勝ち手が負け手より多くのマスを確定させ、パスありではその偏りが消える、という予測が出る。最初の 3 手では、どの手も自分のマス以外を確定させないので、終盤の局面で測った。全体の平均では、確定するマスの数は標準で勝ち手 1.49・負け手 1.29、パスありで 1.34・1.32 で、予測どおりだった。ところが局面ごとに見ると 2 つのルールは似ている。多くの局面で勝ち手の方がわずかに少なく、平均を押し上げているのは、8 マス以上を確定させるまれな手（どちらのルールでも 16% が勝ち）である。仮説の支持は、よくても弱いと判断する。</p>
+</section>
+
+<section id="ja-ai">
+<h2>8. AI と定石</h2>
+<p><strong>探索.</strong> ランダムなプレイアウトは真の勝敗をほとんど予測しない（AUC 0.53〜0.62）。このためモンテカルロ木探索はあまり役に立たず、強さは完全読みで決まる。AI は持ち時間の大半で、子の小さい順に手を読み切り、残りで MCTS-Solver <a href="#ja-r-winands">[3]</a> を使う。Rust/WebAssembly のエンジンは、以前の JavaScript 版より約 3.6 倍速く読み切る。以前の AI との対戦では、1 手 1 秒で 25/48、3 秒で 15/20 だった。</p>
+<p><strong>定石.</strong> AI は最初に定石を引く。標準ルールは 222,865 局面（2.2MB）、パスありは 71,721 局面（0.7MB）である。中身は、深さ 3 までの全局面、深さ 4 での勝ち手、確定黒マスが 5 個以下の共有局面である。相手の負けと記録された局面へ進む手があれば、その中からランダムに選んですぐ打つ。深さ 3 の負け局面で相手が手を指したとき、定石に勝ち手がある割合は標準で 87%、パスありで 57% で、上限を 6 マスにしてもほとんど変わらない。定石ありの AI は、定石なしの同じ AI に対して、先手ではどちらのルールでも 5 戦 5 勝、後手では 5 戦 3 勝だった（1 手 1 秒）。</p>
+</section>
+
+<section id="ja-limits">
+<h2>9. 限界と今後の課題</h2>
+<ul>
+<li><strong>標準ルールの検算</strong>は一部（201 局面中 71 局面）だけである。完了には、はるかに長い時間か、検算プログラムへの共有表の導入が必要である。</li>
+<li><strong>最善進行.</strong> 勝つ側が最短で終わらせ、負ける側が最も長く粘る手数の完全読みを実装した。小さい 160 局面で素朴なミニマックスと一致したが、解がおよそ 10<sup>4</sup> 通りを超えると遅すぎる。初期局面からの最善進行は未解決である。</li>
+<li>2 つのルールでの<strong>読みの深さとパスの時期</strong>（勝敗を決める読みがどこまで深いか、最善進行で何手目にパスが現れるか）はまだ測っていない。</li>
+<li>終盤の統計はランダムな対局で出た局面によるもので、最善進行で現れる局面とは異なる。</li>
+</ul>
+</section>
+
+<section id="ja-repro">
+<h2>再現方法</h2>
+<pre><code>export CARGO_TARGET_DIR="$PWD/rust/target"
+cargo test  --release --offline --manifest-path rust/Cargo.toml
+cargo build --release --offline --manifest-path rust/Cargo.toml
+cargo test  --release --offline --manifest-path verify/Cargo.toml
+tools/build-wasm.sh &amp;&amp; npm test
+# パスありの証明局面を独立に検算（約 5 分）
+verify/target/release/hibverify solve pass results/pass/verify-proofset-jobs.txt /tmp/res.txt 1
+python3 tools/analysis/verify_compare.py results/pass /tmp/res.txt</code></pre>
+<p>結果：<code>results/&lt;rule&gt;/positions.txt</code>（深さ 3 までの局面）、<code>edges.txt</code>、<code>depth3-results.txt</code>（キー、勝敗、勝ち手、解の数、ミリ秒、探索局面数、石）、<code>winkeys.txt</code>、検算プログラムの出力。</p>
+</section>
+
+<section id="ja-refs">
+<h2>参考文献</h2>
+<ol>
+<li id="ja-r-allis">L. V. Allis. <em>Searching for Solutions in Games and Artificial Intelligence.</em> PhD thesis, University of Limburg, 1994.</li>
+<li id="ja-r-takizawa">H. Takizawa. Othello is Solved. arXiv:2310.19387, 2023.</li>
+<li id="ja-r-winands">M. H. M. Winands, Y. Björnsson, J.-T. Saito. Monte-Carlo Tree Search Solver. <em>Computers and Games</em>, 2008.</li>
+</ol>
+</section>
+</article>
+</main>
+</body>
+</html>

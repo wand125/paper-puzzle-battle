@@ -1,0 +1,36 @@
+:root{--bg:#fff;--fg:#1b1b1b;--muted:#5d5d5d;--line:#ddd;--accent:#1f5fa8;--win:#1b7a3a;--loss:#fff;--cell:#f2f2f2}
+@media (prefers-color-scheme:dark){:root{--bg:#141414;--fg:#e8e8e8;--muted:#a8a8a8;--line:#333;--accent:#7fb2ee;--win:#3fae68;--loss:#fff;--cell:#2a2a2a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:46rem;margin:0 auto;padding:1.5rem 1rem 4rem}
+a{color:var(--accent)}
+.languages{text-align:right;font-size:.9rem}
+.languages button{background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;padding:0 .2rem}
+.languages [aria-pressed=true]{font-weight:bold;text-decoration:underline}
+.overline{letter-spacing:.08em;font-size:.8rem;color:var(--muted);margin:0}
+h1{font-size:2rem;line-height:1.25;margin:.3rem 0 .6rem}
+.lead{font-size:1.1rem}
+.links{font-size:.95rem}
+nav{display:flex;flex-wrap:wrap;gap:.3rem .9rem;font-size:.9rem;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:.6rem 0;margin:1.2rem 0}
+h2{font-size:1.35rem;margin:2.2rem 0 .6rem}
+h3{font-size:1.05rem;margin:1.4rem 0 .4rem}
+.result{border-left:4px solid var(--win);padding:.4rem .8rem;font-weight:bold}
+.note{font-size:.88rem;color:var(--muted)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;margin:1rem 0;font-size:.93rem}
+caption{text-align:left;color:var(--muted);font-size:.88rem;padding-bottom:.3rem}
+th,td{border-bottom:1px solid var(--line);padding:.35rem .7rem;text-align:left}
+td:not(:first-child),th:not(:first-child){text-align:right}
+pre{background:var(--cell);padding:.8rem;overflow-x:auto;font-size:.82rem;line-height:1.5}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.92em}
+figure{margin:1.4rem 0}
+.boards{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center}
+.boards>div{flex:1 1 15rem;max-width:20rem;text-align:center}
+.boards p{margin:.2rem 0;font-size:.9rem}
+.hexmap{width:100%;height:auto}
+.hexmap polygon{stroke:#000;stroke-width:.5}
+.hexmap .win{fill:var(--win)}.hexmap .loss{fill:var(--loss)}.hexmap .unknown{fill:var(--cell)}
+figcaption{font-size:.88rem;color:var(--muted);text-align:center}
+.sw{display:inline-block;width:.9em;height:.9em;vertical-align:-.1em;margin:0 .25em 0 .6em;border-radius:2px}
+.sw.win{background:var(--win)}.sw.loss{background:var(--loss);border:1px solid #000}
+[hidden]{display:none!important}

@@ -1,0 +1,17 @@
+[package]
+name = "hib_engine"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+
+[profile.wasm]
+inherits = "release"
+panic = "abort"

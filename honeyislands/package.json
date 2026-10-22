@@ -1,0 +1,10 @@
+{
+  "name": "honeyislands-battle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "serve": "python3 -m http.server 8000 --bind 127.0.0.1",
+    "build:wasm": "tools/build-wasm.sh"
+  }
+}
