@@ -2,13 +2,44 @@ import { WasmEngine } from './hib-wasm.js';
 
 let E = null;
 const RULES = ['normal', 'pass'];
+
+// download progress over all files: {kind: 'progress', loaded, total} (total 0 if unknown)
+const sizes = new Map(), done = new Map();
+let lastPost = 0;
+function progress(force) {
+  const now = performance.now();
+  if (!force && now - lastPost < 100) return;
+  lastPost = now;
+  const sum = m => [...m.values()].reduce((a, b) => a + b, 0);
+  const unknown = [...sizes.values()].some(s => !s);
+  postMessage({ kind: 'progress', loaded: sum(done), total: unknown ? 0 : sum(sizes) });
+}
+async function load(path, required) {
+  const r = await fetch(new URL(path, import.meta.url));
+  if (!r.ok) { if (required) throw new Error(`${path} ${r.status}`); return null; }
+  sizes.set(path, +r.headers.get('content-length') || 0);
+  done.set(path, 0);
+  if (!r.body) { const b = await r.arrayBuffer(); done.set(path, b.byteLength); progress(true); return b; }
+  const chunks = [];
+  for (const reader = r.body.getReader(); ;) {
+    const { done: end, value } = await reader.read();
+    if (end) break;
+    chunks.push(value);
+    done.set(path, done.get(path) + value.length);
+    progress(false);
+  }
+  const out = new Uint8Array(done.get(path));
+  let o = 0;
+  for (const c of chunks) { out.set(c, o); o += c.length; }
+  progress(true);
+  return out.buffer;
+}
 // opening books are optional: without them the AI only searches
-const book = rule => fetch(new URL(`./data/book-${rule}.bin`, import.meta.url))
-  .then(r => (r.ok ? r.arrayBuffer() : null)).catch(() => null);
+const book = rule => load(`./data/book-${rule}.bin`, false).catch(() => null);
 
 const ready = Promise.all([
-  fetch(new URL('./wasm/hib_engine.wasm', import.meta.url)).then(r => { if (!r.ok) throw new Error('hib_engine.wasm ' + r.status); return r.arrayBuffer(); }),
-  fetch(new URL('./data/solutions.bin', import.meta.url)).then(r => { if (!r.ok) throw new Error('solutions.bin ' + r.status); return r.arrayBuffer(); }),
+  load('./wasm/hib_engine.wasm', true),
+  load('./data/solutions.bin', true),
   ...RULES.map(book),
 ]).then(async ([wasm, data, ...books]) => {
   E = await WasmEngine.create(wasm, data, (Math.random() * 2 ** 32) >>> 0);

@@ -44,9 +44,10 @@
         <p class="sr-only" id="board-help" data-i18n="boardHelp">Tab to a playable cell, then press Enter or Space to place a stone. Arrow keys move between playable cells.</p>
         <div class="legend" aria-label="Cell types" id="legend">
           <span><i class="swatch undetermined"></i><span data-i18n="undetermined">Undetermined</span></span>
-          <span><i class="swatch black"></i><span data-i18n="determinedBlack">Determined black</span></span>
-          <span><i class="swatch white"></i><span data-i18n="determinedWhite">Determined white</span></span>
+          <span class="det"><i class="swatch black"></i><span data-i18n="determinedBlack">Determined black</span></span>
+          <span class="det"><i class="swatch white"></i><span data-i18n="determinedWhite">Determined white</span></span>
         </div>
+        <label class="check heat-toggle" id="heat-toggle" hidden><input type="checkbox" id="heat-game" data-heat><span data-i18n="heat">Heat map</span></label>
         <div class="game-actions" id="game-actions" hidden>
           <button type="button" id="undo" data-i18n="undo" disabled>Undo</button>
           <button type="button" id="new-game" data-i18n="newGame">New game</button>
@@ -107,6 +108,15 @@
           </label>
         </div>
       </fieldset>
+      <fieldset class="choice">
+        <legend data-i18n="display">Display</legend>
+        <label class="check"><input type="checkbox" id="show-det"><span data-i18n="showDet">Show determined cells</span></label>
+        <p id="show-det-note" class="field-note"></p>
+        <label class="check"><input type="checkbox" id="show-count"><span data-i18n="showCount">Show the number of solutions</span></label>
+        <label class="check"><input type="checkbox" id="heat" data-heat><span data-i18n="heat">Heat map</span></label>
+        <p class="field-note" data-i18n="heatNote">Colors each cell by the share of remaining solutions in which it is black. You can switch it during the game.</p>
+      </fieldset>
+      <div class="load" id="load"><div class="load-bar"><span id="load-fill"></span></div><span id="load-text"></span></div>
       <div class="setup-actions">
         <button type="button" id="setup-cancel" data-i18n="cancel">Cancel</button>
         <button class="primary start" type="submit" id="start" disabled data-i18n="start">Start game</button>
