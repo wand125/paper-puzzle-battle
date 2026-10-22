@@ -62,7 +62,7 @@ p { margin: 6px 0; }
 #board g:focus { outline: none; }
 #board text { text-anchor: middle; dominant-baseline: central; pointer-events: none; fill: #33261a; font-size: 2.5px; font-weight: 650; paint-order: stroke; stroke: #fff; stroke-width: .5px; stroke-linejoin: round; }
 #board .num { stroke: none; }
-#board .move-value { font-size: 4.2px; font-weight: 800; stroke-width: .6px; }
+#board .move-value { font-size: 4.8px; font-weight: 800; stroke-width: .65px; }
 /* board cells stay light in both themes, so their labels use the light-theme colors */
 #board .win { fill: #b85400; }
 #board .loss { fill: #3d5f8f; }
@@ -185,4 +185,9 @@ body.app .table-scroll, body.app .kifu { max-height: none; overflow: visible; }
   .panel-body > .card { padding: 4px 12px 12px; }
   body.app [data-tab=moves] > p.muted { display: none; }
   body.app thead { top: 26px; }
+}
+/* phones: no room for the source marks on the board (the moves table still shows them) */
+@media (max-width: 640px) {
+  #board .source { display: none; }
+  #board .move-value { font-size: 5.6px; stroke-width: .75px; transform: translateY(1.6px); }
 }

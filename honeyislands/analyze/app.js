@@ -345,7 +345,7 @@ function renderBoard() {
     const cellName = t('cellLabel', { n: c, x: CELLS[c].x, y: CELLS[c].y });
     g.setAttribute('aria-label', placed ? `${cellName}, ${t('stone')} ${order.get(c) + 1}` : `${cellName}, ${t(st === 1 ? 'black' : st === 0 ? 'white' : 'undetermined')}${legal.has(c) ? `, ${valueText(evalRes?.value[c])}, ${number(afterCount(c))}` : ''}`);
     label.setAttribute('class', placed ? 'num' : `move-value ${valueClass(v)}`);
-    label.setAttribute('y', center(CELLS[c]).cy + (placed || v < 0 ? 0 : -1.5));
+    label.setAttribute('y', center(CELLS[c]).cy + (placed || v < 0 ? 0 : -1.8));
     label.textContent = placed ? order.get(c) + 1 : v >= 0 ? valueShort(v) : '';
     source.setAttribute('class', 'source');
     source.textContent = v >= 0 ? sourceMark(evalRes?.source[c]) : '';
