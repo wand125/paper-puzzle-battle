@@ -42,8 +42,8 @@ const svgEl = (tag, attrs, parent) => {
 
 const boards = {};   // rule -> board.json promise
 const m4cache = {};  // `${rule}:${c1},${c2}` -> promise
-const loadBoard = (rule) => (boards[rule] ??= fetch(`results/${rule}/board.json`).then(r => r.json()));
-const loadM4 = (rule, a, b) => (m4cache[`${rule}:${a},${b}`] ??= fetch(`results/${rule}/m4/${a}-${b}.json`).then(r => r.json()));
+const loadBoard = (rule) => (boards[rule] ??= fetch(`../results/${rule}/board.json`).then(r => r.json()));
+const loadM4 = (rule, a, b) => (m4cache[`${rule}:${a},${b}`] ??= fetch(`../results/${rule}/m4/${a}-${b}.json`).then(r => r.json()));
 
 function explorer(root) {
   const T = TEXT[root.dataset.lang] || TEXT.en;
@@ -129,7 +129,7 @@ const PT = {
 async function playanim(root) {
   const L = PT[root.dataset.lang] || PT.en, pass = root.dataset.rule === 'pass';
   let line;
-  try { line = (await (await fetch(`results/${root.dataset.rule}/best-line.json`)).json()).moves; } catch { return; }
+  try { line = (await (await fetch(`../results/${root.dataset.rule}/best-line.json`)).json()).moves; } catch { return; }
   root.innerHTML = `<svg class="ex-board" viewBox="0 4 100 92" role="img"></svg>
     <p class="ex-summary pa-info"></p>
     <div class="pa-ctrl">

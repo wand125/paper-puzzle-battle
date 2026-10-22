@@ -5,7 +5,7 @@ Two players alternately place black stones on the 61-cell Honey Islands board. E
 - **Standard rule** (stones only on undetermined cells): the first player wins; 42 of the 61 first moves win.
 - **Redundant-hint rule** (stones may also go on cells already determined black, without shrinking the solution set): the first player wins with every first move.
 
-Paper: [index.html](index.html) (English / 日本語). Game and analysis tool: [play/](play/).
+Paper: [paper/](paper/) (English / 日本語). Game and analysis tool: [play/](play/).
 
 The puzzle and its solution set come from the author's Honey Islands real-time solver (ハニーアイランドリアルタイムソルバ).
 
@@ -13,7 +13,7 @@ The puzzle and its solution set come from the author's Honey Islands real-time s
 
 | Path | Contents |
 |---|---|
-| `index.html`, `paper.css`, `paper.js` | the paper |
+| `paper/` | the paper (`index.html`, `paper.css`, `paper.js`, `explorer.js`); `index.html` at the top redirects there |
 | `play/` | game and analysis tool (WebAssembly engine in a Web Worker, solution data, opening books) |
 | `rust/` | engine: solver, AI, opening-book tools (`hib`), game-length search (`src/dist.rs`), wasm interface |
 | `verify/` | independent checker `hibverify`, written from the rules alone (std only, no symmetry, no shared tables) |
