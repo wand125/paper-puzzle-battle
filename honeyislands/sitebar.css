@@ -1,7 +1,7 @@
 /* thin site bar shared by the game, the analysis tool and the paper */
 nav.sitebar {
   --sb-bg: #ffffff; --sb-fg: #3b2a1a; --sb-mute: #7a6450; --sb-line: #e7d6b6; --sb-accent: #e8a92a;
-  position: sticky; top: 0; z-index: 50;
+  position: sticky; top: 0; z-index: 50; flex-shrink: 0;
   display: flex; align-items: center; gap: 4px;
   height: 36px; margin: 0; padding: 0 16px; box-sizing: border-box; flex-wrap: nowrap;
   background: var(--sb-bg); border: 0; border-bottom: 1px solid var(--sb-line);
@@ -16,4 +16,23 @@ nav.sitebar a.sb-tab {
 }
 nav.sitebar a.sb-tab:hover, nav.sitebar a.sb-tab:focus-visible { color: var(--sb-fg); }
 nav.sitebar a.sb-tab[aria-current=page] { color: var(--sb-fg); border-bottom-color: var(--sb-accent); }
-@media (max-width: 420px) { nav.sitebar .sb-title { display: none; } }
+nav.sitebar .sb-icon { display: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+/* phones: the bar becomes a bottom tab bar */
+@media (max-width: 640px) {
+  nav.sitebar {
+    position: fixed; top: auto; bottom: 0; left: 0; right: 0;
+    height: calc(58px + env(safe-area-inset-bottom)); padding: 0 0 env(safe-area-inset-bottom);
+    border-bottom: 0; border-top: 1px solid var(--sb-line); gap: 0; overflow: visible;
+    box-shadow: 0 -4px 16px #3b2a1a14;
+  }
+  nav.sitebar .sb-title { display: none; }
+  nav.sitebar a.sb-tab {
+    flex: 1 1 0; flex-direction: column; justify-content: center; gap: 3px; padding: 0;
+    font-size: 11px; border-bottom: 0; border-top: 3px solid transparent;
+  }
+  nav.sitebar a.sb-tab[aria-current=page] { border-top-color: var(--sb-accent); color: var(--sb-fg); }
+  nav.sitebar a.sb-tab[aria-current=page] .sb-icon { stroke: var(--sb-accent); }
+  nav.sitebar .sb-icon { display: block; }
+  body { padding-bottom: calc(58px + env(safe-area-inset-bottom)); }
+}

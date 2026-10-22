@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Honey Islands · Analysis</title>
   <meta name="description" content="Explore Honey Islands Battle positions, move values and remaining puzzle solutions.">
   <link rel="icon" href="data:,">
@@ -11,10 +11,11 @@
   <link rel="stylesheet" href="../sitebar.css">
   <script type="module" src="app.js"></script>
 </head>
-<body>
+<body class="app">
   <nav class="sitebar" data-current="analyze" data-base="../"></nav>
   <div class="page">
     <header>
+      <h1 data-i18n="title">Honey Islands · Analysis</h1>
       <div class="preferences">
         <div id="language-toggle" class="small-toggle" role="group" aria-label="Language">
           <button type="button" data-language="ja" lang="ja">JA</button><button type="button" data-language="en" lang="en">EN</button>
@@ -23,7 +24,6 @@
           <button type="button" data-theme-set="light" data-i18n="light">Light</button><button type="button" data-theme-set="dark" data-i18n="dark">Dark</button>
         </div>
       </div>
-      <h1 data-i18n="title">Honey Islands · Analysis</h1>
     </header>
     <main class="workspace">
       <div class="board-column">
@@ -40,6 +40,52 @@
             <span id="history-position"></span>
             <button type="button" id="next">▶</button><button type="button" id="last">▶|</button>
           </div>
+        </section>
+      </div>
+      <aside class="panel-column">
+        <div class="panel-tabs" role="tablist" id="panel-tabs">
+          <button type="button" role="tab" data-tab="moves" data-i18n="tabMoves">Moves</button>
+          <button type="button" role="tab" data-tab="details" data-i18n="tabDetails">Position</button>
+          <button type="button" role="tab" data-tab="kifu" data-i18n="tabKifu">Record</button>
+          <button type="button" role="tab" data-tab="solutions" data-i18n="tabSolutions">Solutions</button>
+          <button type="button" role="tab" data-tab="display" data-i18n="tabDisplay">Display</button>
+          <button type="button" role="tab" data-tab="settings" data-i18n="tabSettings">Settings</button>
+        </div>
+        <section class="card" data-tab="moves" aria-labelledby="moves-heading">
+          <h2 id="moves-heading" data-i18n="movesTable">Playable moves</h2>
+          <p class="muted" data-i18n="tableHelp"></p>
+          <div class="table-scroll">
+          <table id="moves-table">
+            <thead><tr>
+              <th scope="col" aria-sort="ascending"><button type="button" data-sort="cell" data-i18n="cell">Cell</button></th>
+              <th scope="col"><button type="button" data-sort="value" data-i18n="value">Value</button></th>
+              <th scope="col"><button type="button" data-sort="n" data-i18n="after">Left</button></th>
+              <th scope="col"><button type="button" data-sort="share" data-i18n="share">Share</button></th>
+            </tr></thead>
+            <tbody id="move-rows"></tbody>
+          </table>
+          </div>
+          <button type="button" id="play-selected" data-i18n="playSelected" disabled>Play selected cell</button>
+        </section>
+        <section class="card" data-tab="details" aria-labelledby="details-heading">
+          <h2 id="details-heading" data-i18n="positionDetails">Position details</h2>
+          <dl id="position-details"></dl>
+          <p id="position-value"></p><p id="value-source" class="muted"></p>
+          <button type="button" id="deeper" data-i18n="deeper">Solve deeper (4×)</button>
+        </section>
+        <section class="card" data-tab="kifu" aria-labelledby="kifu-heading">
+          <h2 id="kifu-heading" data-i18n="kifu">Move list</h2>
+          <button type="button" id="initial" data-i18n="initial">Initial position</button>
+          <ol id="kifu" class="kifu"></ol>
+        </section>
+        <section class="card" data-tab="solutions" aria-labelledby="solutions-heading">
+          <h2 id="solutions-heading" data-i18n="solutions">Remaining solutions</h2>
+          <p id="solutions-note" class="muted"></p>
+          <button type="button" id="clear-solution" data-i18n="clearSolution" hidden>Clear outline</button>
+          <div id="solutions-grid" class="solutions-grid"></div>
+        </section>
+        <section class="card" data-tab="display" aria-labelledby="display-heading">
+          <h2 id="display-heading" data-i18n="display">Display</h2>
           <div class="overlays">
             <label><input id="show-eval" type="checkbox"><span data-i18n="showEval">Win/loss of each move</span></label>
             <label><input id="show-heat" type="checkbox"><span data-i18n="heat">Heat map</span></label>
@@ -54,19 +100,7 @@
           </div>
           <p class="muted legend-note" data-i18n="overlayLegend"></p>
         </section>
-        <section class="card" aria-labelledby="solutions-heading">
-          <h2 id="solutions-heading" data-i18n="solutions">Remaining solutions</h2>
-          <p id="solutions-note" class="muted"></p>
-          <button type="button" id="clear-solution" data-i18n="clearSolution" hidden>Clear outline</button>
-          <div id="solutions-grid" class="solutions-grid"></div>
-        </section>
-        <details class="card help">
-          <summary data-i18n="howTo">How to use</summary>
-          <ul><li data-i18n="how1"></li><li data-i18n="how2"></li><li data-i18n="how3"></li><li data-i18n="how4"></li><li data-i18n="how5"></li></ul>
-        </details>
-      </div>
-      <aside class="panel-column">
-        <section class="card" aria-labelledby="settings-heading">
+        <section class="card" data-tab="settings" aria-labelledby="settings-heading">
           <h2 id="settings-heading" data-i18n="settings">Settings</h2>
           <fieldset><legend data-i18n="mode">Mode</legend>
             <div id="mode" class="toggle" role="group" aria-label="Mode">
@@ -85,34 +119,7 @@
           <label class="time"><span data-i18n="aiTime">AI time (seconds)</span><input id="ai-time" type="number" min="0.1" max="600" step="0.1" value="2" inputmode="decimal"></label>
           <button type="button" id="resume" data-i18n="resume" hidden>Resume AI</button>
         </section>
-        <section class="card" aria-labelledby="details-heading">
-          <h2 id="details-heading" data-i18n="positionDetails">Position details</h2>
-          <dl id="position-details"></dl>
-          <p id="position-value"></p><p id="value-source" class="muted"></p>
-          <button type="button" id="deeper" data-i18n="deeper">Solve deeper (4×)</button>
-        </section>
-        <section class="card" aria-labelledby="kifu-heading">
-          <h2 id="kifu-heading" data-i18n="kifu">Move list</h2>
-          <button type="button" id="initial" data-i18n="initial">Initial position</button>
-          <ol id="kifu" class="kifu"></ol>
-        </section>
-        <section class="card" aria-labelledby="moves-heading">
-          <h2 id="moves-heading" data-i18n="movesTable">Playable moves</h2>
-          <p class="muted" data-i18n="tableHelp"></p>
-          <div class="table-scroll">
-          <table id="moves-table">
-            <thead><tr>
-              <th scope="col" aria-sort="ascending"><button type="button" data-sort="cell" data-i18n="cell">Cell</button></th>
-              <th scope="col"><button type="button" data-sort="value" data-i18n="value">Value</button></th>
-              <th scope="col"><button type="button" data-sort="n" data-i18n="after">Left</button></th>
-              <th scope="col"><button type="button" data-sort="share" data-i18n="share">Share</button></th>
-            </tr></thead>
-            <tbody id="move-rows"></tbody>
-          </table>
-          </div>
-          <button type="button" id="play-selected" data-i18n="playSelected" disabled>Play selected cell</button>
-        </section>
-        <section class="card" aria-labelledby="sharing-heading">
+        <section class="card" data-tab="settings" aria-labelledby="sharing-heading">
           <h2 id="sharing-heading" data-i18n="sharing">Share & import</h2>
           <div class="row"><button type="button" id="copy-link" data-i18n="copyLink">Copy link</button><button type="button" id="copy-moves" data-i18n="copyMoves">Copy moves</button></div>
           <form id="import-form">
@@ -122,6 +129,10 @@
           <label for="example" data-i18n="loadExample">Load example</label>
           <select id="example"><option value="" data-i18n="chooseExample">Choose a perfect-play line…</option><option value="normal" data-i18n="normalExample">Standard · perfect play</option><option value="pass" data-i18n="passExample">Redundant hints · perfect play</option></select>
         </section>
+        <details class="card help" data-tab="settings">
+          <summary data-i18n="howTo">How to use</summary>
+          <ul><li data-i18n="how1"></li><li data-i18n="how2"></li><li data-i18n="how3"></li><li data-i18n="how4"></li><li data-i18n="how5"></li></ul>
+        </details>
       </aside>
     </main>
   </div>

@@ -17,7 +17,8 @@ const strings = {
     position: 'Position', new: 'New position', showEval: 'Win/loss of each move', heat: 'Heat map',
     showAfter: 'Solutions left after the move', stone: 'Stone', black: 'Determined black', white: 'Determined white',
     undetermined: 'Undetermined', win: 'Win', loss: 'Loss', unknown: 'Unknown',
-    overlayLegend: 'Green = winning move; dashed edge = losing move; ? = unproven. B = book, S = solved. Heat: darker green = higher black share. Small numbers = solutions after playing. Amber dashed outlines = selected solution.',
+    overlayLegend: 'Yellow = winning move; dashed edge = losing move; ? = unproven. B = book, S = solved. Heat: deeper yellow = higher black share. Small numbers = solutions after playing. Brown dashed outlines = selected solution.',
+    display: 'Display', tabMoves: 'Moves', tabDetails: 'Position', tabKifu: 'Record', tabSolutions: 'Solutions', tabDisplay: 'Display', tabSettings: 'Settings',
     solutions: 'Remaining solutions', clearSolution: 'Clear outline', solutionsLimit: 'Thumbnail boards appear when 64 or fewer solutions remain.',
     solutionsLoading: 'Loading thumbnails…', solutionsShown: '{n} solutions · select a board to outline its black cells.', solutionLabel: 'Solution {n}',
     howTo: 'How to use',
@@ -48,7 +49,8 @@ const strings = {
     title: 'ハニーアイランド・バトル · 解析', language: '言語', theme: 'テーマ', light: 'ライト', dark: 'ダーク',
     position: '盤面', new: '新しい局面', showEval: '各手の勝ち負け', heat: 'ヒートマップ',
     showAfter: '着手後の解数', stone: '置いた石', black: '黒確定', white: '白確定', undetermined: '未確定', win: '勝ち', loss: '負け', unknown: '不明',
-    overlayLegend: '緑＝勝つ手、破線の縁＝負ける手、?＝未証明。「定」＝定石、「読」＝読み切り。濃い緑ほど黒率が高く、小さい数字は着手後の解数です。黄土色の破線は選択した解の黒マスです。',
+    overlayLegend: '黄色＝勝つ手、破線の縁＝負ける手、?＝未証明。「定」＝定石、「読」＝読み切り。濃い黄色ほど黒率が高く、小さい数字は着手後の解数です。茶色の破線は選択した解の黒マスです。',
+    display: '表示', tabMoves: '着手', tabDetails: '局面', tabKifu: '棋譜', tabSolutions: '解', tabDisplay: '表示', tabSettings: '設定',
     solutions: '残りの解', clearSolution: '解の輪郭を消す', solutionsLimit: '残りの解が64通り以下になると、解の一覧を表示します。',
     solutionsLoading: '解の一覧を読み込み中…', solutionsShown: '{n} 通り · 選ぶと盤面に黒マスの輪郭を表示します。', solutionLabel: '解 {n}',
     howTo: '使い方',
@@ -536,6 +538,17 @@ function localize() {
   renderSitebar(lang);
   render();
 }
+// ---- panel tabs: one panel section group at a time beside (or under) the board
+let tab = store.get('hib-an-tab', 'moves');
+function showTab(name) {
+  if (!document.querySelector(`.panel-tabs [data-tab="${name}"]`)) name = 'moves';
+  tab = name;
+  store.set('hib-an-tab', name);
+  for (const b of $('panel-tabs').querySelectorAll('button')) b.setAttribute('aria-selected', String(b.dataset.tab === name));
+  for (const el of document.querySelectorAll('.panel-column > [data-tab]')) el.hidden = el.dataset.tab !== name;
+}
+for (const b of $('panel-tabs').querySelectorAll('button')) b.onclick = () => showTab(b.dataset.tab);
+showTab(tab);
 for (const b of document.querySelectorAll('[data-language]')) b.onclick = () => { lang = b.dataset.language; localize(); updateURL(); };
 for (const b of document.querySelectorAll('[data-theme-set]')) b.onclick = () => {
   document.documentElement.dataset.theme = b.dataset.themeSet;

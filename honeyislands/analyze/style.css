@@ -124,3 +124,51 @@ select { display: block; width: 100%; margin-top: 6px; font-size: .85rem; }
 .help li + li { margin-top: 8px; }
 @media (max-width: 820px) { .workspace { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 420px) { .card { padding: 12px; } .preferences { gap: 0; } button, input, select { font-size: 16px; } .navigation { gap: 4px; } }
+
+/* app layout: the page fits the viewport; the board takes the free height and the side panel scrolls inside */
+body.app { height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+body.app .page { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; flex-direction: column; padding: 0 16px 12px; }
+body.app header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; }
+body.app h1 { font-size: 1.05rem; letter-spacing: -.01em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+body.app .preferences { flex-shrink: 0; flex-wrap: nowrap; gap: 4px; }
+body.app .small-toggle button { min-height: 34px; padding: 4px 7px; }
+body.app .workspace { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+body.app .board-column { display: flex; flex-direction: column; min-height: 0; }
+body.app .board-card { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.app .board-card > p { flex-shrink: 0; }
+body.app #board { flex: 1 1 0; min-height: 100px; height: auto; max-width: none; margin: 4px 0; }
+body.app .navigation { margin: 4px 0 0; flex-shrink: 0; }
+body.app .panel-column { display: flex; flex-direction: column; gap: 0; min-height: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); overflow: hidden; }
+body.app .panel-column > .card { border: 0; border-radius: 0; flex: 0 0 auto; }
+body.app .panel-column > .card + .card { border-top: 1px solid var(--line); }
+body.app .panel-column > [data-tab]:not([hidden]) ~ [data-tab]:not([hidden]) { border-top: 1px solid var(--line); }
+.panel-tabs { display: flex; flex-shrink: 0; overflow-x: auto; border-bottom: 1px solid var(--line); background: var(--surface); scrollbar-width: none; }
+.panel-tabs button { flex: 1 0 auto; min-height: 40px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--muted); font-size: .82rem; padding: 6px 10px; }
+.panel-tabs button[aria-selected=true] { color: var(--text); font-weight: 700; border-bottom-color: var(--accent); background: var(--bg); }
+/* the visible tab group scrolls as one */
+body.app .panel-column { overflow-y: auto; }
+body.app .panel-tabs { position: sticky; top: 0; z-index: 2; }
+body.app .table-scroll, body.app .kifu { max-height: none; overflow: visible; }
+body.app thead { top: 40px; }
+@media (max-width: 820px) {
+  body.app .workspace { display: flex; flex-direction: column; gap: 8px; }
+  body.app .board-column { flex: 6 1 0; min-height: 0; }
+  body.app .board-card { padding: 6px 10px; position: relative; }
+  body.app .panel-column { flex: 4 1 0; min-height: 120px; }
+  body.app .position-heading { position: absolute; top: 6px; right: 10px; }
+  body.app .position-heading h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  body.app #notice { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+  body.app #selection { margin: 0; }
+}
+@media (max-width: 640px) {
+  body.app .page { padding: 0 8px 6px; }
+  body.app .position-heading h2 { font-size: .9rem; }
+  body.app .position-heading button { min-height: 32px; padding: 2px 10px; font-size: .8rem; }
+  body.app .counter { font-size: 1.25rem; margin: 0; }
+  body.app #status { font-size: .85rem; margin: 2px 0; }
+  body.app .navigation button { min-height: 34px; }
+  .panel-tabs button { padding: 6px 8px; font-size: .78rem; }
+  body.app [data-tab=moves] > p.muted { display: none; }
+}
+/* tab names already label these groups */
+body.app .panel-column > :is([data-tab=moves], [data-tab=details], [data-tab=kifu], [data-tab=solutions], [data-tab=display]) > h2 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

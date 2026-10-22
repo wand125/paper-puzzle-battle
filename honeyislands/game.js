@@ -16,8 +16,8 @@ const strings = {
   en: {
     title: 'Honey Islands Battle', analysisTool: 'Analysis tool', paper: 'Paper',
     language: 'Language', theme: 'Theme', light: 'Light', dark: 'Dark', links: 'Links',
-    setupTitle: 'Choose your game', cancel: 'Cancel', opponent: 'Opponent', humanFirst: 'You first · vs AI',
-    aiFirst: 'AI first · vs you', twoPlayers: 'Two players', strength: 'AI strength',
+    setupTitle: 'Choose your game', cancel: 'Cancel', opponent: 'Opponent', humanFirst: 'You first',
+    aiFirst: 'AI first', twoPlayers: 'Two players', strength: 'AI strength',
     easy: 'Easy', normal: 'Normal', strong: 'Strong', strongest: 'Strongest',
     strength1: 'Random moves, with an eye for immediate wins.',
     strength2: 'A mix of random play and a short search.',
@@ -56,8 +56,8 @@ const strings = {
   ja: {
     title: 'ハニーアイランド・バトル', analysisTool: '解析ツール', paper: '論文',
     language: '言語', theme: 'テーマ', light: 'ライト', dark: 'ダーク', links: '関連リンク',
-    setupTitle: '対戦設定', cancel: 'キャンセル', opponent: '対戦相手', humanFirst: 'あなた先手 vs AI',
-    aiFirst: 'AI先手 vs あなた', twoPlayers: '2人対戦', strength: 'AIの強さ',
+    setupTitle: '対戦設定', cancel: 'キャンセル', opponent: '対戦相手', humanFirst: 'あなたが先手',
+    aiFirst: 'AIが先手', twoPlayers: '2人で対戦', strength: 'AIの強さ',
     easy: 'やさしい', normal: 'ふつう', strong: 'つよい', strongest: 'さいきょう',
     strength1: 'ランダムに打ちますが、すぐに勝てる手は見逃しません。',
     strength2: 'ランダムな手と短い思考を半々で使います。',
@@ -148,6 +148,7 @@ function localize() {
   document.documentElement.lang = lang;
   document.title = t('title');
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
+  for (const el of document.querySelectorAll('[data-i18n-label]')) el.setAttribute('aria-label', t(el.dataset.i18nLabel));
   for (const [id, key] of Object.entries({ 'language-toggle': 'language', 'theme-toggle': 'theme',
     game: 'game', board: 'board', legend: 'cellTypes', progress: 'progress', })) {
     $(id).setAttribute('aria-label', t(key));
@@ -352,7 +353,6 @@ function play(cell) {
 function showResult() {
   $('result').hidden = false;
   $('status').hidden = true;      // the banner says who won
-  $('result').scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
 }
 function closeResult() {
   $('result').hidden = true;
@@ -371,7 +371,6 @@ function startGame(next = setupChoices()) {
   active = true;
   if ($('setup').open) $('setup').close();
   refresh();
-  $('game').scrollIntoView({ block: 'start' });
 }
 // the setup popup; while a game is on, cancelling it returns to that game
 function showSetup() {
@@ -552,6 +551,7 @@ $('swap').addEventListener('click', () => {
   startGame({ ...settings, mode });
 });
 $('setup-cancel').addEventListener('click', () => $('setup').close());
+$('how-open').addEventListener('click', () => $('how-dialog').showModal());
 // the setup popup is non-modal so the site bar stays usable; Escape returns to a running game
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && $('setup').open && active) $('setup').close();

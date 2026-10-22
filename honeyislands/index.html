@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Honey Islands Battle</title>
   <meta name="description" content="Narrow down 1,304,983 puzzle solutions. Play Honey Islands Battle against AI or a friend.">
   <link rel="icon" href="data:,">
@@ -11,10 +11,11 @@
   <link rel="stylesheet" href="sitebar.css">
   <script type="module" src="game.js"></script>
 </head>
-<body>
+<body class="app">
   <nav class="sitebar" data-current="game" data-base="./"></nav>
   <div class="page">
     <header class="header">
+      <h1 data-i18n="title">Honey Islands Battle</h1>
       <div class="preferences">
         <div class="small-toggle" id="language-toggle" role="group" aria-label="Language">
           <button type="button" data-language="ja" lang="ja" aria-pressed="false">JA</button><span aria-hidden="true">|</span><button type="button" data-language="en" lang="en" aria-pressed="true">EN</button>
@@ -22,8 +23,8 @@
         <div class="small-toggle" id="theme-toggle" role="group" aria-label="Theme">
           <button type="button" data-theme-set="light" data-i18n="light">Light</button><span aria-hidden="true">|</span><button type="button" data-theme-set="dark" data-i18n="dark">Dark</button>
         </div>
+        <button type="button" id="how-open" class="how-open" data-i18n-label="howTo" aria-label="How to play">?</button>
       </div>
-      <h1 data-i18n="title">Honey Islands Battle</h1>
     </header>
 
     <main>
@@ -53,30 +54,33 @@
         </section>
         <svg id="board" viewBox="0 4 100 92" role="group" aria-label="Hexagonal game board" aria-describedby="board-help"></svg>
         <p class="sr-only" id="board-help" data-i18n="boardHelp">Tab to a playable cell, then press Enter or Space to place a stone. Arrow keys move between playable cells.</p>
-        <div class="legend" aria-label="Cell types" id="legend">
-          <span><i class="swatch undetermined"></i><span data-i18n="undetermined">Undetermined</span></span>
-          <span class="det"><i class="swatch black"></i><span data-i18n="determinedBlack">Determined black</span></span>
-          <span class="det"><i class="swatch white"></i><span data-i18n="determinedWhite">Determined white</span></span>
-        </div>
-        <label class="check heat-toggle" id="heat-toggle" hidden><input type="checkbox" id="heat-game" data-heat><span data-i18n="heat">Heat map</span></label>
-        <div class="game-actions" id="game-actions" hidden>
-          <button type="button" id="undo" data-i18n="undo" disabled>Undo</button>
-          <button type="button" id="new-game" data-i18n="newGame">New game</button>
+        <div class="board-foot">
+          <div class="legend" aria-label="Cell types" id="legend">
+            <span><i class="swatch undetermined"></i><span data-i18n="undetermined">Undetermined</span></span>
+            <span class="det"><i class="swatch black"></i><span data-i18n="determinedBlack">Determined black</span></span>
+            <span class="det"><i class="swatch white"></i><span data-i18n="determinedWhite">Determined white</span></span>
+          </div>
+          <label class="check heat-toggle" id="heat-toggle" hidden><input type="checkbox" id="heat-game" data-heat><span data-i18n="heat">Heat map</span></label>
+          <div class="game-actions" id="game-actions" hidden>
+            <button type="button" id="undo" data-i18n="undo" disabled>Undo</button>
+            <button type="button" id="new-game" data-i18n="newGame">New game</button>
+          </div>
         </div>
       </section>
 
-      <details class="how-to">
-        <summary data-i18n="howTo">How to play</summary>
-        <ul>
-          <li data-i18n="how1">The 61-cell board has 1,304,983 puzzle solutions, each with 25 black cells.</li>
-          <li data-i18n="how2">Take turns placing a black stone on an undetermined cell. Only solutions with that cell black remain.</li>
-          <li data-i18n="how3">The player whose stone leaves exactly one solution wins.</li>
-          <li data-i18n="how4">With redundant hints, an empty determined-black cell also accepts a stone and passes the turn. Determined-white cells are never playable.</li>
-        </ul>
-      </details>
     </main>
   </div>
 
+  <dialog id="how-dialog" class="how-dialog" aria-labelledby="how-title">
+    <h2 id="how-title" data-i18n="howTo">How to play</h2>
+    <ul>
+      <li data-i18n="how1">The 61-cell board has 1,304,983 puzzle solutions, each with 25 black cells.</li>
+      <li data-i18n="how2">Take turns placing a black stone on an undetermined cell. Only solutions with that cell black remain.</li>
+      <li data-i18n="how3">The player whose stone leaves exactly one solution wins.</li>
+      <li data-i18n="how4">With redundant hints, an empty determined-black cell also accepts a stone and passes the turn. Determined-white cells are never playable.</li>
+    </ul>
+    <form method="dialog"><button class="primary" data-i18n="close">Close</button></form>
+  </dialog>
   <dialog id="setup" class="setup-dialog" aria-labelledby="setup-title">
     <form id="setup-form">
       <h2 id="setup-title" data-i18n="setupTitle">Choose your game</h2>
