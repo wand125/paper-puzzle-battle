@@ -84,6 +84,203 @@ fn main() {
             }
             println!("line {}", st.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(","));
         }
+        Some("pv2") => {
+            // hib pv2 <known-all.txt> <book.bin> [thresh] : a best line in two stages (RULE=pass
+            // for the pass rule). Above `thresh` solutions (default 3000) the winner plays the
+            // winning move leaving the fewest solutions and the loser the move keeping the most
+            // (values from the book / shared results, else solved). From `thresh` down, exact
+            // game length: the winner finishes fastest, the loser resists longest.
+            // Rows: "ply n passes mover_wins stage move is_pass plies_left(stage 2) ms"
+            use std::sync::Arc;
+            let pass = std::env::var("RULE").is_ok_and(|r| r == "pass");
+            let thresh: usize = args.get(4).map(|s| s.parse().unwrap()).unwrap_or(3000);
+            let known = Arc::new(Known::new(3000));
+            known.load_text(&std::fs::read_to_string(&args[2]).unwrap());
+            known.load_bin(&std::fs::read(&args[3]).unwrap(), pass);
+            eprintln!("known {} / {}", known.map.read().unwrap().len(), known.pmap.read().unwrap().len());
+            let mut sv = Solver::new(24).with_symmetry();
+            sv.known = Some(known.clone());
+            let sym = Sym::new();
+            let mut ds = hib_engine::dist::Dist::new(pass);
+            fn dm(v: &[u64]) -> u64 { v.iter().fold(!0u64, |a, &x| a & x) & ((1u64 << N) - 1) }
+            let t0 = now_ms();
+            let value = |list: &[u64], p: i32, sv: &mut Solver| -> bool {
+                if list.len() <= 1 { return false; }
+                let key = sym.canon(dm(list));
+                let hit = if pass { known.pmap.read().unwrap().get(&(key, p)).copied() } else { known.map.read().unwrap().get(&key).copied() };
+                if let Some(v) = hit { return v; }
+                let r = if pass { sv.win_pass(list, p) } else { sv.win(list) };
+                r.ok().unwrap()
+            };
+            let mut st: Vec<u8> = Vec::new();
+            let mut list = u.to_list(&u.root());
+            let mut p = 0i32;
+            let mut ply = 0;
+            while list.len() > 1 {
+                let n = list.len();
+                let d0 = dm(&list);
+                let stm = st.iter().fold(0u64, |m, &c| m | 1u64 << c);
+                // options: (cell, is_pass, child, passes left in the child)
+                let mut opts: Vec<(u8, bool, Vec<u64>, i32)> = Vec::new();
+                if pass && p > 0 {
+                    let c = (0..N as u8).find(|&c| d0 >> c & 1 == 1 && stm >> c & 1 == 0).unwrap();
+                    opts.push((c, true, list.clone(), p - 1));
+                }
+                let cnt = list_counts(&list);
+                let mut lg = legal(&cnt, n);
+                lg.sort_unstable_by_key(|&c| cnt[c as usize]);
+                for c in lg {
+                    let kid: Vec<u64> = list.iter().copied().filter(|x| (x >> c) & 1 == 1).collect();
+                    let p2 = p + dm(&kid).count_ones() as i32 - d0.count_ones() as i32 - 1;
+                    opts.push((c, false, kid, p2));
+                }
+                let (pick, win, stage, left);
+                if n > thresh {
+                    stage = 1;
+                    left = 0;
+                    // winning move with the fewest solutions (regular moves are sorted; a pass keeps n)
+                    let mut w = None;
+                    // a position recorded as lost needs no search: every option loses
+                    let key = sym.canon(d0);
+                    let lost = if pass { known.pmap.read().unwrap().get(&(key, p)) == Some(&false) } else { known.map.read().unwrap().get(&key) == Some(&false) };
+                    let order: Vec<usize> = (0..opts.len()).filter(|&i| !opts[i].1).chain((0..opts.len()).filter(|&i| opts[i].1)).collect();
+                    for &i in order.iter().filter(|_| !lost) {
+                        if opts[i].2.len() == 1 || !value(&opts[i].2, opts[i].3, &mut sv) { w = Some(i); break; }
+                    }
+                    win = w.is_some();
+                    pick = w.unwrap_or_else(|| (0..opts.len()).max_by_key(|&i| (opts[i].2.len(), opts[i].1 as u8)).unwrap());
+                } else {
+                    stage = 2;
+                    let (wn, len) = ds.length(&list, p).ok().unwrap();
+                    win = wn;
+                    left = len;
+                    let mut best: Option<(usize, u32)> = None;
+                    for (i, o) in opts.iter().enumerate() {
+                        if win {
+                            if ds.loses_within(&o.2, o.3, len - 1).ok().unwrap() && (best.is_none() || (opts[best.unwrap().0].1 && !o.1)) { best = Some((i, 0)); }
+                        } else {
+                            let (_, l) = ds.length(&o.2, o.3).ok().unwrap();
+                            if best.is_none_or(|(j, b)| l > b || (l == b && opts[j].1 && !o.1)) { best = Some((i, l)); }
+                        }
+                    }
+                    pick = best.unwrap().0;
+                }
+                let o = opts.swap_remove(pick);
+                println!("{ply} {n} {p} {} {stage} {} {} {left} {:.0}", win as u8, o.0, o.1 as u8, now_ms() - t0);
+                st.push(o.0);
+                list = o.2;
+                p = o.3;
+                ply += 1;
+            }
+            println!("line {} plies {}", st.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(","), st.len());
+        }
+        Some("gamesize") => {
+            // hib gamesize <games> [seed]: random games (every option equally likely, a pass
+            // counting as one option) under both rules. Prints per rule the game-length
+            // distribution and the mean number of options by ply.
+            let games: usize = args[2].parse().unwrap();
+            let mut rng = Rng::new(args.get(3).map(|s| s.parse().unwrap()).unwrap_or(1));
+            fn dm(v: &[u64]) -> u64 { v.iter().fold(!0u64, |a, &x| a & x) & ((1u64 << N) - 1) }
+            for rule in 0..2 {
+                let mut len_hist = vec![0u64; 130];
+                let mut br_sum = vec![0f64; 130];
+                let mut br_cnt = vec![0u64; 130];
+                let mut passes = 0u64;
+                for _ in 0..games {
+                    let mut list = u.to_list(&u.root());
+                    let mut ply = 0;
+                    let mut stones = 0i32;
+                    while list.len() > 1 {
+                        let cnt = list_counts(&list);
+                        let lg = legal(&cnt, list.len());
+                        let p = if rule == 1 { dm(&list).count_ones() as i32 - stones } else { 0 };
+                        let opts = lg.len() + p.max(0) as usize;
+                        br_sum[ply] += opts as f64;
+                        br_cnt[ply] += 1;
+                        let k = rng.below(opts);
+                        if k < lg.len() {
+                            let c = lg[k];
+                            list.retain(|x| (x >> c) & 1 == 1);
+                        } else {
+                            passes += 1;
+                        }
+                        stones += 1;
+                        ply += 1;
+                    }
+                    len_hist[ply] += 1;
+                }
+                let total: u64 = len_hist.iter().enumerate().map(|(i, &c)| i as u64 * c).sum();
+                println!("rule {rule} games {games} mean_plies {:.3} passes_per_game {:.3}", total as f64 / games as f64, passes as f64 / games as f64);
+                println!("  length {}", len_hist.iter().enumerate().filter(|(_, &c)| c > 0).map(|(i, c)| format!("{i}:{c}")).collect::<Vec<_>>().join(" "));
+                println!("  options_by_ply {}", (0..130).filter(|&i| br_cnt[i] > 0).map(|i| format!("{i}:{:.2}", br_sum[i] / br_cnt[i] as f64)).collect::<Vec<_>>().join(" "));
+            }
+        }
+        Some("plines") => {
+            // hib plines <count> <nmin> <nmax> [seed]: best lines (fastest win / longest
+            // resistance) from random-game samples under the pass rule. One row per ply:
+            // "sample ply_from_start plies_left mover_wins is_pass passes_left n regular_move_also_wins"
+            let count: usize = args[2].parse().unwrap();
+            let nmin: usize = args[3].parse().unwrap();
+            let nmax: usize = args[4].parse().unwrap();
+            let mut rng = Rng::new(args.get(5).map(|s| s.parse().unwrap()).unwrap_or(1));
+            let mut ds = hib_engine::dist::Dist::new(true);
+            fn dm(v: &[u64]) -> u64 { v.iter().fold(!0u64, |a, &x| a & x) & ((1u64 << N) - 1) }
+            let mut done = 0;
+            while done < count {
+                let mut st: Vec<u8> = Vec::new();
+                let mut list = u.to_list(&u.root());
+                while list.len() > nmax {
+                    let cnt = list_counts(&list);
+                    let lg = legal(&cnt, list.len());
+                    let c = lg[rng.below(lg.len())];
+                    st.push(c);
+                    list.retain(|x| (x >> c) & 1 == 1);
+                }
+                if list.len() < nmin { continue; }
+                let mut p = dm(&list).count_ones() as i32 - st.len() as i32;
+                let mut cur = list.clone();
+                let mut ply = 0;
+                while cur.len() > 1 {
+                    let n = cur.len();
+                    let d0 = dm(&cur);
+                    let (win, len) = ds.length(&cur, p).ok().unwrap();
+                    // options: pass first, then regular moves smallest child first
+                    let mut opts: Vec<(bool, Vec<u64>, i32)> = Vec::new();
+                    if p > 0 { opts.push((true, cur.clone(), p - 1)); }
+                    let cnt = list_counts(&cur);
+                    let mut lg = legal(&cnt, n);
+                    lg.sort_unstable_by_key(|&c| cnt[c as usize]);
+                    for c in lg {
+                        let kid: Vec<u64> = cur.iter().copied().filter(|x| (x >> c) & 1 == 1).collect();
+                        let p2 = p + dm(&kid).count_ones() as i32 - d0.count_ones() as i32 - 1;
+                        opts.push((false, kid, p2));
+                    }
+                    // prefer a regular move among equally good options, so a pass is counted
+                    // only where it is strictly needed (or strictly best for the loser)
+                    let mut pick: Option<usize> = None;
+                    if win {
+                        for (i, o) in opts.iter().enumerate() {
+                            if ds.loses_within(&o.1, o.2, len - 1).ok().unwrap() && (pick.is_none() || opts[pick.unwrap()].0) { pick = Some(i); if !o.0 { break; } }
+                        }
+                    } else {
+                        let mut best = 0;
+                        for (i, o) in opts.iter().enumerate() {
+                            let (_, l) = ds.length(&o.1, o.2).ok().unwrap();
+                            if l + 1 > best || (l + 1 == best && pick.is_some_and(|j: usize| opts[j].0) && !o.0) { best = l + 1; pick = Some(i); }
+                        }
+                    }
+                    // does some regular move also win (ignoring length)?
+                    let reg_win = win && opts.iter().any(|o| !o.0 && !ds.length(&o.1, o.2).ok().unwrap().0);
+                    let o = opts.swap_remove(pick.unwrap());
+                    println!("{done} {ply} {len} {} {} {p} {n} {}", win as u8, o.0 as u8, reg_win as u8);
+                    cur = o.1;
+                    p = o.2;
+                    ply += 1;
+                }
+                done += 1;
+                if done % 50 == 0 { eprintln!("{done} samples"); }
+            }
+        }
         Some("lengths") => {
             // hib lengths <count> <nmin> <nmax> [seed]: random-game samples as in `moves`;
             // game length under perfect play for both rules:

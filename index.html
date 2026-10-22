@@ -8,20 +8,32 @@
 <link rel="icon" href="data:,">
 <style>
 :root{--bg:#fff;--fg:#1b1b1b;--muted:#5d5d5d;--line:#ddd;--accent:#1f5fa8}
-@media (prefers-color-scheme:dark){:root{--bg:#141414;--fg:#e8e8e8;--muted:#a8a8a8;--line:#333;--accent:#7fb2ee}}
+:root[data-theme=dark]{--bg:#141414;--fg:#e8e8e8;--muted:#a8a8a8;--line:#333;--accent:#7fb2ee}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 system-ui,-apple-system,"Hiragino Sans",sans-serif}
 main{max-width:46rem;margin:0 auto;padding:2rem 1rem}
 a{color:var(--accent)} p.muted{color:var(--muted)}
 li{margin:.6rem 0;padding-bottom:.6rem;border-bottom:1px solid var(--line);list-style:none}
 ul{padding:0}
+.theme{text-align:right;font-size:.9rem}
+.theme button{background:none;border:0;color:var(--accent);cursor:pointer;font:inherit;padding:0 .2rem}
+.theme [aria-pressed=true]{font-weight:bold;text-decoration:underline}
 </style>
+<script>try{if(localStorage.getItem("hib-paper-theme")==="dark")document.documentElement.dataset.theme="dark"}catch{}</script>
 </head>
 <body><main>
+<div class="theme"><button type="button" data-theme-set="light">Light</button> | <button type="button" data-theme-set="dark">Dark</button></div>
 <h1>Puzzle Battles</h1>
 <p>Two-player games played on the solution sets of logic puzzles. The players narrow down the solutions; the player who leaves exactly one solution wins.</p>
 <p class="muted">ロジックパズルの解の集合で遊ぶ 2 人対戦ゲームと、それを解いた論文。</p>
 <ul>
 <li><strong><a href="honeyislands/">Honey Islands Battle is Solved</a></strong> — first player wins under both rules. <a href="honeyislands/?lang=ja">日本語</a> · <a href="honeyislands/play/">Play and analyze</a></li>
 </ul>
-</main></body>
+</main>
+<script>
+function theme(t){if(t==="dark")document.documentElement.dataset.theme="dark";else delete document.documentElement.dataset.theme;
+for(const b of document.querySelectorAll("[data-theme-set]"))b.setAttribute("aria-pressed",String(b.dataset.themeSet===t))}
+theme(document.documentElement.dataset.theme==="dark"?"dark":"light");
+for(const b of document.querySelectorAll("[data-theme-set]"))b.onclick=()=>{try{localStorage.setItem("hib-paper-theme",b.dataset.themeSet)}catch{}theme(b.dataset.themeSet)};
+</script>
+</body>
 </html>

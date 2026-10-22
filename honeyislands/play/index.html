@@ -33,7 +33,7 @@
       <div class="field"><span>ルール</span>
         <div id="rule" class="toggle" role="group" aria-label="ルール">
           <button type="button" data-value="normal">標準（確定したマスには置けない）</button>
-          <button type="button" data-value="pass">黒に確定したマスにも置ける（パスあり）</button>
+          <button type="button" data-value="pass">黒に確定したマスにも置ける（余剰ヒントあり）</button>
         </div>
       </div>
       <label>AI の持ち時間（秒）
@@ -50,7 +50,7 @@
         <li>2 人が交互に、マスに黒石を 1 つ置きます。置いた石は「黒マス」として、残っている解を絞り込みます。</li>
         <li>黒か白が確定したマス（残りのすべての解で同じ色のマス）には置けません（標準ルール）。</li>
         <li>解が 1 つに決まったら、その石を置いた人の勝ちです。相手は置ける場所がなくなり負けになります。</li>
-        <li>「パスあり」ルールでは、黒に確定したマスにも置けます。解は変わらないので、手番を相手に渡すパスになります。使えるのは「黒に確定したマスの数 − 置いた石の数」回までです。白に確定したマスには置けません（置くと解がなくなるため）。</li>
+        <li>「余剰ヒントあり」ルールでは、黒に確定したマスにも置けます。余剰ヒントを置いても解は変わらず、手番が相手に移ります。使えるのは「黒に確定したマスの数 − 置いた石の数」回までです。白に確定したマスには置けません（置くと解がなくなるため）。</li>
       </ul>
       <p class="legend">解析の表示：<span class="sw mwin"></span>勝ち（置くと相手が負け） <span class="sw mlose"></span>負け。定石を引き、無ければ AI の持ち時間の範囲で読み切ります。「？」は読み切れなかったマスです。文字の下の小さな「定」は定石から、「読」はその場で読み切った結果です。</p>
       <p class="legend"><span class="sw stone"></span>置いた石 <span class="sw fb"></span>黒に確定 <span class="sw fw"></span>白に確定 <span class="sw free"></span>置ける</p>

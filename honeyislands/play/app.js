@@ -214,7 +214,7 @@ function render() {
   if (!ready) { statusEl.textContent = '解データを読み込み中…'; countEl.textContent = ''; return; }
   if (!analysis) { statusEl.textContent = '計算中…'; return; }
   countEl.textContent = `残りの解: ${analysis.n.toLocaleString()} 通り ／ 置けるマス: ${analysis.legal.length}`
-    + (ruleEl.value === 'pass' ? ` ／ パス: あと ${passCells().length} 回` : '');
+    + (ruleEl.value === 'pass' ? ` ／ 余剰ヒント: あと ${passCells().length} 回` : '');
   if (gameOver()) {
     const winner = (stones.length - 1) % 2;
     statusEl.textContent = stones.length ? `解が 1 つに決まりました。${playerName(winner)}の勝ち！` : '';
