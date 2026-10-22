@@ -18,8 +18,8 @@ The puzzle and its solution set come from the author's Honey Islands real-time s
 | `rust/` | engine: solver, AI, opening-book tools (`hib`), game-length search (`src/dist.rs`), wasm interface |
 | `verify/` | independent checker `hibverify`, written from the rules alone (std only, no symmetry, no shared tables) |
 | `results/normal`, `results/pass` | positions up to depth 3, edges, depth-3 results, winning depth-4 replies, first-move values, verifier outputs |
-| `results/<rule>/best-line.json` | the two-stage best lines of Section 5.1 (`hib pv2`) |
-| `results/analysis/` | game-length search on 1,000 positions (`lengths.txt`), 400 best lines under the redundant-hint rule (`plines.txt`), best-line raw output (`pv2-*.txt`), random-game size (`gamesize.txt`); summarized by `tools/analysis/pred_bc.py` |
+| `results/<rule>/best-line.json` | the perfect-play lines of Section 5.1 (`hib pv2`) |
+| `results/analysis/` | game-length search on 1,000 positions (`lengths.txt`), 400 perfect-play lines under the redundant-hint rule (`plines.txt`), best-line raw output (`pv2-*.txt`), random-game size (`gamesize.txt`); summarized by `tools/analysis/pred_bc.py` |
 | `results/moves-sample.txt` | every move of 2,000 random late-game positions solved under both rules (Section 7) |
 | `tools/` | data conversion and checks, wasm build, book export, analysis scripts |
 | `test/` | Node tests (JS reference engine, wasm engine, opening book, analysis) and match scripts |

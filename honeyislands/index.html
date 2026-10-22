@@ -60,7 +60,7 @@
 <div><h4>Redundant-hint rule</h4><div class="playanim" data-rule="pass" data-lang="en"></div></div>
 </div>
 <p class="ex-legend"><span class="sw ex-loss"></span>stone (move number) <span class="sw ex-black pa-dot"></span>determined black <span class="sw ex-unk pa-dot"></span>determined white <span class="sw ex-unk"></span>undetermined</p>
-<figcaption>A game under each rule (the best lines of Section 5.1), with determined cells after each move. A green dot marks a determined cell; a stone with a green outline under the redundant-hint rule is a redundant hint. In the game under the redundant-hint rule, move 7 determines 14 cells besides its own, and the players then use these 14 redundant hints before the last two moves.</figcaption>
+<figcaption>A game under each rule (the perfect-play lines of Section 5.1), with determined cells after each move. A green dot marks a determined cell; a stone with a green outline under the redundant-hint rule is a redundant hint. In the game under the redundant-hint rule, move 7 determines 14 cells besides its own, and the players then use these 14 redundant hints before the last two moves.</figcaption>
 </figure>
 </section>
 
@@ -109,9 +109,9 @@
 <div class="explorer" data-lang="en"></div>
 <figcaption>Opening explorer: values of every move up to move 4, under both rules. Data: <a href="results/normal/board.json">standard</a>, <a href="results/pass/board.json">redundant-hint rule</a> (moves 1–3) and <code>results/&lt;rule&gt;/m4/</code> (move 4).</figcaption>
 </figure>
-<h3>5.1 A best line</h3>
-<p>From the initial position a full game-length search is out of reach, so we built the line in two stages. Above 3,000 remaining solutions, the winner plays the winning move that leaves the fewest solutions, and the loser plays the move that keeps the most; the values come from the book and the solver. From 3,000 solutions down, we use the exact game-length search: the winner finishes as fast as possible, and the loser resists as long as possible. The resulting lines are a well-defined perfect play, not the unique one.</p>
-<p>Under the standard rule the first player wins in <strong>19 plies</strong>. The second stage begins at move 6 with 968 solutions, and the rest is a slow descent of a few solutions per move. Under the redundant-hint rule the first player wins in <strong>23 plies</strong>. Move 7 cuts 220 solutions to 4 and determines 14 black cells besides its own. The next 14 moves are all redundant hints, played alternately, and then two regular moves finish the game (animated in Section 2; data: <a href="results/normal/best-line.json">standard</a>, <a href="results/pass/best-line.json">redundant-hint rule</a>, <code>hib pv2</code>). The four remaining solutions stay fixed while the players use the redundant hints; the parity of the 14 redundant hints decides who makes the last real choice.</p>
+<h3>5.1 A perfect-play line</h3>
+<p>Because the value of every position on the way is known, perfect play can be read off directly: the winning side always plays a move that keeps the win, and for the losing side every move loses. Many such lines exist, so we pick one with a tie-break that makes it short and easy to follow. While more than 3,000 solutions remain, the winner plays the winning move that leaves the fewest solutions and the loser the move that keeps the most. From 3,000 solutions down, an exact game-length search decides: the winner finishes as fast as possible and the loser resists as long as possible. (This search agrees with plain minimax on 160 small positions.)</p>
+<p>Under the standard rule the first player wins in <strong>19 plies</strong>. The game-length search takes over at move 6, with 968 solutions, and the rest is a slow descent of a few solutions per move. Under the redundant-hint rule the first player wins in <strong>23 plies</strong>. Move 7 cuts 220 solutions to 4 and determines 14 black cells besides its own. The next 14 moves are all redundant hints, played alternately, and then two regular moves finish the game (animated in Section 2; data: <a href="results/normal/best-line.json">standard</a>, <a href="results/pass/best-line.json">redundant-hint rule</a>, <code>hib pv2</code>). The four remaining solutions stay fixed while the players use the redundant hints; the parity of the 14 redundant hints decides who makes the last real choice.</p>
 <h3>5.2 Game size</h3>
 <p>To measure the size of the game we played 20,000 random games under each rule, choosing every legal move with equal probability (a redundant hint counts as one move). Under the standard rule a game lasts on average 11.23 plies (median 11; 90% of games take 8–14 plies; range 6–19). Under the redundant-hint rule it lasts 12.61 plies (median 12; 9–18; range 5–25), with 1.40 redundant hints per game. The number of legal moves stays near 61 for the first six plies, then falls quickly as the solutions run out; redundant hints keep it higher late in the game. The number of distinct positions after 1, 2 and 3 moves is 9, 180 and 3,122 up to symmetry (the table above).</p>
 <div class="scroll"><table>
@@ -121,6 +121,15 @@
 <tr><td>Standard</td><td>61.0</td><td>57.0</td><td>53.9</td><td>42.6</td><td>26.0</td><td>15.3</td><td>10.3</td><td>8.6</td><td>6.0</td></tr>
 <tr><td>Redundant-hint rule</td><td>61.0</td><td>57.0</td><td>53.9</td><td>44.3</td><td>30.1</td><td>20.3</td><td>15.2</td><td>12.0</td><td>9.6</td></tr>
 </tbody></table></div>
+<div class="scroll"><table>
+<caption>Plies to the end of the game</caption>
+<thead><tr><th></th><th>Standard</th><th>Redundant-hint rule</th></tr></thead>
+<tbody>
+<tr><td>random games from the initial position (mean of 20,000)</td><td>11.23</td><td>12.61</td></tr>
+<tr><td>perfect-play line from the initial position (Section 5.1)</td><td>19</td><td>23</td></tr>
+<tr><td>perfect play from 1,000 positions with 200–3,000 solutions (mean, Section 7)</td><td>9.63</td><td>15.17</td></tr>
+</tbody></table></div>
+<p>Perfect play makes games longer than random play, since the losing side resists as long as it can. The gap between the rules is also larger under perfect play (+5.5 plies against +1.4 in random games): the redundant hints that random players rarely use are exactly what the loser uses to prolong the game.</p>
 </section>
 
 <section id="verify">
@@ -146,7 +155,7 @@
 <p>Two effects combine. Winning moves are about twice as dense, so a win is found sooner. Lost positions, which require refuting every move, have fewer real alternatives to refute; a redundant hint is a single extra move. We also traced individual cases. Where a value differs between the rules, the deciding reply is usually a regular move, and redundant hints matter later in the line.</p>
 <p><strong>A parity hypothesis, and what the data say.</strong> One explanation is that a move that determines many black cells shifts the parity of the remaining game, but under the redundant-hint rule each such cell also allows a redundant hint, which acts as a pass that the opponent can use to shift it back. This predicts that, under the standard rule, winning moves determine more cells than losing moves, and that the bias disappears under the redundant-hint rule. In the first three moves no move determines more than its own cell, so we measured late positions. In aggregate, winning moves determine on average 1.49 cells versus 1.29 for losing moves under the standard rule, and 1.34 versus 1.32 under the redundant-hint rule. That matches the prediction. Position by position, however, the two rules look alike: in most positions the winning moves determine slightly fewer cells, and the averages are driven by rare moves that determine eight or more cells (16% of which win under both rules). We regard the hypothesis as weakly supported at best.</p>
 <p><strong>Longer games under the redundant-hint rule.</strong> A cheaper solve might suggest shorter games. The opposite holds. We solved 1,000 random positions with 200–3,000 solutions for exact game length under both rules. Under perfect play the game lasts on average 9.63 plies under the standard rule and 15.17 under the redundant-hint rule (+5.54); the redundant-hint rule is longer in 843 positions, equal in 135 and shorter in 22. Finding the length is also harder under the redundant-hint rule (median 4,683 versus 178 nodes). The value differs between the rules in 168 positions, although only 24 had a redundant hint available at the start. Redundant hints appear later in the line and change the outcome from there.</p>
-<p><strong>Redundant hints come at the end.</strong> We traced 400 best lines under the redundant-hint rule from random positions (5,972 plies). Only 8 started with a redundant hint available, yet 354 contain redundant hints, 3,564 in total. The first redundant hint comes on average 27% of the way into the line. 2,097 of the redundant hints are played with exactly four solutions left, as in the best line of Section 5.1. Of the 1,853 redundant hints made by the winner, 1,852 were the only winning move. Redundant hints are thus not a side option: in the endgame they are the decisive parity tool, which fits the earlier observation that differing values are decided late.</p>
+<p><strong>Redundant hints come at the end.</strong> We traced 400 perfect-play lines (winner fastest, loser slowest) under the redundant-hint rule from random positions (5,972 plies). Only 8 started with a redundant hint available, yet 354 contain redundant hints, 3,564 in total. The first redundant hint comes on average 27% of the way into the line. 2,097 of the redundant hints are played with exactly four solutions left, as in the perfect-play line of Section 5.1. Of the 1,853 redundant hints made by the winner, 1,852 were the only winning move. Redundant hints are thus not a side option: in the endgame they are the decisive parity tool, which fits the earlier observation that differing values are decided late.</p>
 </section>
 
 <section id="ai">
@@ -177,7 +186,6 @@
 <h2>10. Limitations and future work</h2>
 <ul>
 <li><strong>Standard-rule verification</strong> is partial (71 of 201 positions); completing it needs either much more time or a shared table in the checker.</li>
-<li><strong>Perfect-play line.</strong> The exact game-length search agrees with plain minimax on 160 small positions but is too slow above roughly 10<sup>4</sup> solutions. The best lines of Section 5.1 therefore use a simpler rule in their first stage, and the shortest forced win from the initial position remains open.</li>
 <li>Late-game statistics come from positions reached by random games, which are not the positions that arise in perfect play.</li>
 </ul>
 </section>
@@ -307,9 +315,9 @@ python3 tools/analysis/verify_compare.py results/pass /tmp/res.txt</code></pre>
 <div class="explorer" data-lang="ja"></div>
 <figcaption>序盤の解析図：4 手目までの各手の勝ち負け（2 つのルール）。データ：<a href="results/normal/board.json">標準</a>、<a href="results/pass/board.json">余剰ヒントあり</a>（1〜3 手目）、<code>results/&lt;rule&gt;/m4/</code>（4 手目）。</figcaption>
 </figure>
-<h3>5.1 最善進行</h3>
-<p>初期局面から手数の完全読みをするのは無理なので、2 段階で進行を作った。残りの解が 3,000 通りより多いあいだは、勝つ側は勝ち手のうち解を最も減らす手を、負ける側は解を最も残す手を選ぶ。勝敗は定石とソルバーで決める。3,000 通り以下では手数の完全読みを使い、勝つ側は最短で終わらせ、負ける側は最も長く粘る。こうして得た進行は、はっきり定義された最善進行の 1 つであり、唯一のものではない。</p>
-<p>標準ルールでは <strong>19 手</strong>で先手が勝つ。第 2 段は 6 手目、解 968 通りから始まり、あとは 1 手ごとに解が少しずつ減っていく。余剰ヒントありでは <strong>23 手</strong>で先手が勝つ。7 手目で解が 220 通りから 4 通りに減り、自分のマスのほかに 14 マスが黒に確定する。続く 14 手では交互に余剰ヒントを置き、そのあと通常の 2 手で終わる（2 節の動画。データ：<a href="results/normal/best-line.json">標準</a>、<a href="results/pass/best-line.json">余剰ヒントあり</a>、<code>hib pv2</code>）。余剰ヒントを使い合うあいだ 4 通りの解は変わらない。14 回の余剰ヒントの偶奇が、最後の本当の選択をどちらがするかを決めている。</p>
+<h3>5.1 最善進行の例</h3>
+<p>途中の局面の勝敗はすべて分かっているので、最善進行はそのまま取り出せる。勝つ側は常に勝ちを保つ手を指し、負ける側はどの手を指しても負けである。こうした進行は多数あるので、短くて追いやすいものを次の規則で 1 つ選んだ。残りの解が 3,000 通りより多いあいだは、勝つ側は勝ち手のうち解を最も減らす手を、負ける側は解を最も残す手を選ぶ。3,000 通り以下では手数の完全読みで決め、勝つ側は最短で終わらせ、負ける側は最も長く粘る（この読みは小さい 160 局面で素朴なミニマックスと一致する）。</p>
+<p>標準ルールでは <strong>19 手</strong>で先手が勝つ。6 手目、解 968 通りの局面から手数の完全読みに切り替わり、あとは 1 手ごとに解が少しずつ減っていく。余剰ヒントありでは <strong>23 手</strong>で先手が勝つ。7 手目で解が 220 通りから 4 通りに減り、自分のマスのほかに 14 マスが黒に確定する。続く 14 手では交互に余剰ヒントを置き、そのあと通常の 2 手で終わる（2 節の動画。データ：<a href="results/normal/best-line.json">標準</a>、<a href="results/pass/best-line.json">余剰ヒントあり</a>、<code>hib pv2</code>）。余剰ヒントを使い合うあいだ 4 通りの解は変わらない。14 回の余剰ヒントの偶奇が、最後の本当の選択をどちらがするかを決めている。</p>
 <h3>5.2 ゲームの規模</h3>
 <p>ゲームの規模を測るため、各ルールでランダムな対局を 20,000 局ずつ行った。合法手をすべて等しい確率で選ぶ（余剰ヒントも 1 手として数える）。標準ルールでは対局は平均 11.23 手（中央値 11、90% が 8〜14 手、最短 6・最長 19）だった。余剰ヒントありでは平均 12.61 手（中央値 12、9〜18 手、最短 5・最長 25）で、1 局あたり余剰ヒントを 1.40 回置く。合法手の数は最初の 6 手ほどは 61 近くを保ち、そのあと解が減るにつれて急に減る。余剰ヒントがあると終盤の合法手は多めに残る。対称性を除いた局面数は、1 手目のあと 9、2 手目のあと 180、3 手目のあと 3,122 である（上の表）。</p>
 <div class="scroll"><table>
@@ -319,6 +327,15 @@ python3 tools/analysis/verify_compare.py results/pass /tmp/res.txt</code></pre>
 <tr><td>標準</td><td>61.0</td><td>57.0</td><td>53.9</td><td>42.6</td><td>26.0</td><td>15.3</td><td>10.3</td><td>8.6</td><td>6.0</td></tr>
 <tr><td>余剰ヒントあり</td><td>61.0</td><td>57.0</td><td>53.9</td><td>44.3</td><td>30.1</td><td>20.3</td><td>15.2</td><td>12.0</td><td>9.6</td></tr>
 </tbody></table></div>
+<div class="scroll"><table>
+<caption>終局までの手数</caption>
+<thead><tr><th></th><th>標準</th><th>余剰ヒントあり</th></tr></thead>
+<tbody>
+<tr><td>初期局面からのランダムな対局（20,000 局の平均）</td><td>11.23</td><td>12.61</td></tr>
+<tr><td>初期局面からの最善進行の例（5.1 節）</td><td>19</td><td>23</td></tr>
+<tr><td>解 200〜3,000 通りの 1,000 局面からの最善進行（平均、7 節）</td><td>9.63</td><td>15.17</td></tr>
+</tbody></table></div>
+<p>最善進行はランダムな対局より長い。負ける側ができるだけ粘るからである。ルール間の差も最善進行の方が大きい（ランダムでは +1.4 手、最善進行では +5.5 手）。ランダムな対局ではあまり使われない余剰ヒントこそ、負ける側が対局を引き延ばすのに使う手である。</p>
 </section>
 
 <section id="ja-verify">
@@ -375,7 +392,6 @@ python3 tools/analysis/verify_compare.py results/pass /tmp/res.txt</code></pre>
 <h2>10. 限界と今後の課題</h2>
 <ul>
 <li><strong>標準ルールの検算</strong>は一部（201 局面中 71 局面）だけである。完了には、はるかに長い時間か、検算プログラムへの共有表の導入が必要である。</li>
-<li><strong>最善進行.</strong> 手数の完全読みは小さい 160 局面で素朴なミニマックスと一致したが、解がおよそ 10<sup>4</sup> 通りを超えると遅すぎる。このため 5.1 節の最善進行は第 1 段で単純な規則を使っており、初期局面からの最短の必勝手順は未解決である。</li>
 <li>終盤の統計はランダムな対局で出た局面によるもので、最善進行で現れる局面とは異なる。</li>
 </ul>
 </section>
