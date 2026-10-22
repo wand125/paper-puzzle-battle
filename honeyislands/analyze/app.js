@@ -16,8 +16,8 @@ const strings = {
     title: 'Honey Islands · Analysis', language: 'Language', theme: 'Theme', light: 'Light', dark: 'Dark',
     position: 'Position', new: 'New position', showEval: 'Win/loss of each move', heat: 'Heat map',
     showAfter: 'Solutions left after the move', stone: 'Stone', black: 'Determined black', white: 'Determined white',
-    undetermined: 'Undetermined', win: 'Win', loss: 'Loss', unknown: 'Unknown',
-    overlayLegend: 'Yellow = winning move; dashed edge = losing move; ? = unproven. B = book, S = solved. Heat: deeper yellow = higher black share. Small numbers = solutions after playing. Brown dashed outlines = selected solution.',
+    undetermined: 'Undetermined', win: 'Win', loss: 'Loss', winShort: 'W', lossShort: 'L', bookMark: 'Book', solvedMark: 'Solved', closePanel: 'Close panel', unknown: 'Unknown',
+    overlayLegend: 'Yellow = winning move; dashed edge = losing move; ? = unproven. Book = opening book, Solved = solved by search. Heat: deeper yellow = higher black share. Small numbers = solutions after playing. Brown dashed outlines = selected solution.',
     display: 'Display', tabMoves: 'Moves', tabDetails: 'Position', tabKifu: 'Record', tabSolutions: 'Solutions', tabDisplay: 'Display', tabSettings: 'Settings',
     solutions: 'Remaining solutions', clearSolution: 'Clear outline', solutionsLimit: 'Thumbnail boards appear when 64 or fewer solutions remain.',
     solutionsLoading: 'Loading thumbnails…', solutionsShown: '{n} solutions · select a board to outline its black cells.', solutionLabel: 'Solution {n}',
@@ -48,8 +48,8 @@ const strings = {
   ja: {
     title: 'ハニーアイランド・バトル · 解析', language: '言語', theme: 'テーマ', light: 'ライト', dark: 'ダーク',
     position: '盤面', new: '新しい局面', showEval: '各手の勝ち負け', heat: 'ヒートマップ',
-    showAfter: '着手後の解数', stone: '置いた石', black: '黒確定', white: '白確定', undetermined: '未確定', win: '勝ち', loss: '負け', unknown: '不明',
-    overlayLegend: '黄色＝勝つ手、破線の縁＝負ける手、?＝未証明。「定」＝定石、「読」＝読み切り。濃い黄色ほど黒率が高く、小さい数字は着手後の解数です。茶色の破線は選択した解の黒マスです。',
+    showAfter: '着手後の解数', stone: '置いた石', black: '黒確定', white: '白確定', undetermined: '未確定', win: '勝ち', loss: '負け', winShort: '勝', lossShort: '負', bookMark: '定跡', solvedMark: '読切', closePanel: 'パネルを閉じる', unknown: '不明',
+    overlayLegend: '黄色＝勝つ手、破線の縁＝負ける手、?＝未証明。「定跡」＝定跡で判定、「読切」＝探索で読み切り。濃い黄色ほど黒率が高く、小さい数字は着手後の解数です。茶色の破線は選択した解の黒マスです。',
     display: '表示', tabMoves: '着手', tabDetails: '局面', tabKifu: '棋譜', tabSolutions: '解', tabDisplay: '表示', tabSettings: '設定',
     solutions: '残りの解', clearSolution: '解の輪郭を消す', solutionsLimit: '残りの解が64通り以下になると、解の一覧を表示します。',
     solutionsLoading: '解の一覧を読み込み中…', solutionsShown: '{n} 通り · 選ぶと盤面に黒マスの輪郭を表示します。', solutionLabel: '解 {n}',
@@ -70,7 +70,7 @@ const strings = {
     turn: '{n} 手目 · {side}の番', finished: '解が1通り · {side}の勝ち', count: '残り {n} 通り',
     loading: '解データを読み込み中…', progress: '解データを読み込み中 · {n} MB', calculating: '局面を更新中…', evaluating: '各手を解析中…',
     thinking: 'AIが考え中…', paused: '棋譜の確認中のためAIは停止しています。',
-    positionValue: '手番側の勝敗：{value}', book: '定石', solved: '持ち時間内に読み切り', unproven: '未証明', terminal: '終局：直前に打った人の勝ちです。',
+    positionValue: '手番側の勝敗：{value}', book: '定跡', solved: '持ち時間内に読み切り', unproven: '未証明', terminal: '終局：直前に打った人の勝ちです。',
     evalTime: '解析時間：{n} 秒。', history: '棋譜の移動', firstMove: '初期局面へ', previousMove: '1手戻る', nextMove: '1手進む', lastMove: '最終局面へ',
     board: '六角形の解析盤面', cellLabel: 'マス {n}（{x}, {y}）', selected: '選択：{cell} · 着手後 {n} 通り',
     stopped: '{n} 手目の直前で読込を停止しました。違法なマス、重複、または終局後の着手です。',
@@ -85,8 +85,10 @@ const number = n => Math.round(n).toLocaleString(lang === 'ja' ? 'ja-JP' : 'en-U
 const compact = n => n >= 1e6 ? `${+(n / 1e6).toFixed(1)}m` : n >= 1e3 ? `${+(n / 1e3).toFixed(1)}k` : String(n);
 const cellLabel = c => `#${c} (${CELLS[c].x},${CELLS[c].y})`;
 const sideName = p => t(p === 0 ? 'first' : 'second');
-const sourceMark = source => source === 1 ? (lang === 'ja' ? '定' : 'B') : source === 2 ? (lang === 'ja' ? '読' : 'S') : '';
+const sourceMark = source => source === 1 ? t('bookMark') : source === 2 ? t('solvedMark') : '';
 const valueText = v => v === 1 ? t('win') : v === 0 ? t('loss') : '?';
+const valueShort = v => v === 1 ? t('winShort') : v === 0 ? t('lossShort') : '?';
+const valueClass = v => v === 1 ? 'win' : v === 0 ? 'loss' : 'unknown';
 
 function toggleGroup(el, initial) {
   const buttons = [...el.querySelectorAll('button')];
@@ -342,13 +344,12 @@ function renderBoard() {
     g.setAttribute('aria-disabled', String(!playable || !legal.has(c)));
     const cellName = t('cellLabel', { n: c, x: CELLS[c].x, y: CELLS[c].y });
     g.setAttribute('aria-label', placed ? `${cellName}, ${t('stone')} ${order.get(c) + 1}` : `${cellName}, ${t(st === 1 ? 'black' : st === 0 ? 'white' : 'undetermined')}${legal.has(c) ? `, ${valueText(evalRes?.value[c])}, ${number(afterCount(c))}` : ''}`);
-    const onblack = kind === 'fb' ? ' onblack' : '';
-    label.setAttribute('class', placed ? 'num' : `move-value${onblack}`);
+    label.setAttribute('class', placed ? 'num' : `move-value ${valueClass(v)}`);
     label.setAttribute('y', center(CELLS[c]).cy + (placed || v < 0 ? 0 : -1.2));
-    label.textContent = placed ? order.get(c) + 1 : v >= 0 ? valueText(v) : '';
-    source.setAttribute('class', `source${onblack}`);
+    label.textContent = placed ? order.get(c) + 1 : v >= 0 ? valueShort(v) : '';
+    source.setAttribute('class', 'source');
     source.textContent = v >= 0 ? sourceMark(evalRes?.source[c]) : '';
-    after.setAttribute('class', `after${onblack}`);
+    after.setAttribute('class', 'after');
     after.textContent = legal.has(c) && $('show-after').checked ? compact(afterCount(c)) : '';
     dot.style.display = !placed && (st === 0 || st === 1) && v < 0 && !(legal.has(c) && $('show-after').checked) ? '' : 'none';
     outline.style.display = selectedSolution !== null && maskHas(solutionMasks?.[selectedSolution], c) ? '' : 'none';
@@ -432,7 +433,7 @@ function renderTable() {
     const cell = document.createElement('td'), value = document.createElement('td'), count = document.createElement('td'), share = document.createElement('td');
     cell.textContent = `#${c}${analysis.state[c] === 1 ? ` · ${t('pass')}` : ''}`;
     const coords = document.createElement('small'); coords.textContent = `(${CELLS[c].x},${CELLS[c].y})`; cell.append(coords);
-    value.textContent = valueText(evalRes?.value[c]);
+    value.textContent = valueText(evalRes?.value[c]); value.className = valueClass(evalRes?.value[c]);
     const src = document.createElement('span'); src.className = 'value-source'; src.textContent = sourceMark(evalRes?.source[c]); value.append(src);
     count.textContent = number(afterCount(c));
     share.textContent = `${(analysis.ratio[c] * 100).toFixed(1)}%`;
@@ -529,6 +530,7 @@ function localize() {
   document.documentElement.lang = lang;
   document.title = t('title');
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
+  for (const el of document.querySelectorAll('[data-i18n-label]')) el.setAttribute('aria-label', t(el.dataset.i18nLabel));
   for (const [id, key] of Object.entries({ 'language-toggle': 'language', 'theme-toggle': 'theme', navigation: 'history', board: 'board', mode: 'mode', rule: 'rule', first: 'firstMove', previous: 'previousMove', next: 'nextMove', last: 'lastMove' })) {
     $(id).setAttribute('aria-label', t(key));
     if (['first', 'previous', 'next', 'last'].includes(id)) $(id).title = t(key);
@@ -538,17 +540,22 @@ function localize() {
   renderSitebar(lang);
   render();
 }
-// ---- panel tabs: one panel section group at a time beside (or under) the board
+// ---- panel tabs: beside the board on wide screens; on narrow screens a sheet over the board that a tab opens and closes
 let tab = store.get('hib-an-tab', 'moves');
-function showTab(name) {
+const narrow = matchMedia('(max-width: 820px)');
+function showTab(name, open = true) {
   if (!document.querySelector(`.panel-tabs [data-tab="${name}"]`)) name = 'moves';
   tab = name;
   store.set('hib-an-tab', name);
-  for (const b of $('panel-tabs').querySelectorAll('button')) b.setAttribute('aria-selected', String(b.dataset.tab === name));
-  for (const el of document.querySelectorAll('.panel-column > [data-tab]')) el.hidden = el.dataset.tab !== name;
+  document.body.classList.toggle('sheet-open', open);
+  for (const b of $('panel-tabs').querySelectorAll('button')) b.setAttribute('aria-selected', String(open && b.dataset.tab === name));
+  for (const el of $('panel-body').querySelectorAll(':scope > [data-tab]')) el.hidden = el.dataset.tab !== name;
 }
-for (const b of $('panel-tabs').querySelectorAll('button')) b.onclick = () => showTab(b.dataset.tab);
-showTab(tab);
+for (const b of $('panel-tabs').querySelectorAll('button')) b.onclick = () =>
+  showTab(b.dataset.tab, !(narrow.matches && document.body.classList.contains('sheet-open') && tab === b.dataset.tab));
+$('sheet-close').onclick = () => showTab(tab, false);
+narrow.addEventListener('change', () => showTab(tab, !narrow.matches));
+showTab(tab, !narrow.matches);
 for (const b of document.querySelectorAll('[data-language]')) b.onclick = () => { lang = b.dataset.language; localize(); updateURL(); };
 for (const b of document.querySelectorAll('[data-theme-set]')) b.onclick = () => {
   document.documentElement.dataset.theme = b.dataset.themeSet;
