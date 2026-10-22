@@ -215,6 +215,140 @@ fn main() {
                 println!("  options_by_ply {}", (0..130).filter(|&i| br_cnt[i] > 0).map(|i| format!("{i}:{:.2}", br_sum[i] / br_cnt[i] as f64)).collect::<Vec<_>>().join(" "));
             }
         }
+        Some("ppgames") => {
+            // hib ppgames <known-all.txt> <book.bin> <games> [seed] : games sampled from the
+            // perfect-play tree (RULE=pass for the redundant-hint rule). Moves leading to the same
+            // position (same determined-black set D and, under the redundant-hint rule, the same
+            // number p of redundant hints left) count as one option. The side to move, if winning,
+            // picks uniformly among its winning options; if losing, uniformly among all options.
+            // Every option of a winning position is valued exactly (shared table, else solved).
+            // "wins" is -1 at losing positions (every option loses there).
+            // Rows per position: "P game ply n p d opts wins win pick_rh rh_opt nodes ms"
+            //   d = |D|, opts = options, wins = winning options (-1 when the mover loses: all lose),
+            //   win = mover wins, pick_rh = the chosen option is a redundant hint,
+            //   rh_opt = value of the redundant-hint option for the mover (1 win, 0 loss, -1 none),
+            //   nodes / ms = search spent valuing this position's options.
+            // Row per finished game: "G game plies log10_weight", weight = product of the numbers
+            // of options the sampler chose from (Knuth's estimator of the number of such games).
+            // ERR_PLY=k (even): the first player makes one error at ply k, choosing uniformly among
+            // its losing options; from then on the second player is the winning side.
+            use std::sync::Arc;
+            let err_ply: Option<usize> = std::env::var("ERR_PLY").ok().map(|v| v.parse().unwrap());
+            let pass = std::env::var("RULE").is_ok_and(|r| r == "pass");
+            let games: usize = args[4].parse().unwrap();
+            let mut rng = Rng::new(args.get(5).map(|s| s.parse().unwrap()).unwrap_or(1));
+            let known = Arc::new(Known::new(3000));
+            known.load_text(&std::fs::read_to_string(&args[2]).unwrap());
+            known.load_bin(&std::fs::read(&args[3]).unwrap(), pass);
+            eprintln!("known {} / {}", known.map.read().unwrap().len(), known.pmap.read().unwrap().len());
+            let mut sv = Solver::new(24).with_symmetry();
+            sv.known = Some(known.clone());
+            let sym = Sym::new();
+            fn dm(v: &[u64]) -> u64 { v.iter().fold(!0u64, |a, &x| a & x) & ((1u64 << N) - 1) }
+            use std::io::Write;
+            let out = std::io::stdout();
+            for g in 0..games {
+                let mut list = u.to_list(&u.root());
+                let mut p = 0i32;
+                let mut ply = 0;
+                let mut logw = 0f64;
+                let mut skipped = false;
+                while list.len() > 1 {
+                    let t0 = now_ms();
+                    let nodes0 = sv.nodes;
+                    let n = list.len();
+                    let d0 = dm(&list);
+                    // options: (is_rh, child, passes left in the child), deduplicated by (D, p)
+                    let mut opts: Vec<(bool, Vec<u64>, i32)> = Vec::new();
+                    if pass && p > 0 { opts.push((true, list.clone(), p - 1)); }
+                    let cnt = list_counts(&list);
+                    let mut seen = std::collections::HashSet::new();
+                    for c in legal(&cnt, n) {
+                        let kid: Vec<u64> = list.iter().copied().filter(|x| (x >> c) & 1 == 1).collect();
+                        let kd = dm(&kid);
+                        if !seen.insert(kd) { continue; }
+                        let p2 = if pass { p + kd.count_ones() as i32 - d0.count_ones() as i32 - 1 } else { 0 };
+                        opts.push((false, kid, p2));
+                    }
+                    // value of an option for the player who moves into it: true = that move wins
+                    let wins_of = |o: &(bool, Vec<u64>, i32), sv: &mut Solver| -> bool {
+                        if o.1.len() <= 1 { return true; }
+                        let key = sym.canon(dm(&o.1));
+                        let hit = if pass { known.pmap.read().unwrap().get(&(key, o.2)).copied() } else { known.map.read().unwrap().get(&key).copied() };
+                        let child_wins = match hit { Some(v) => v, None => if pass { sv.win_pass(&o.1, o.2).ok().unwrap() } else { sv.win(&o.1).ok().unwrap() } };
+                        !child_wins
+                    };
+                    // on a perfect-play path the side to move wins exactly at even plies (the root
+                    // is a first-player win), so losing positions need no search; at winning
+                    // positions every option is valued and a winning one must exist (checked).
+                    let (win, wins, rh_opt, pick);
+                    let winning_side = if err_ply.is_some_and(|k| ply > k) { 1 } else { 0 };
+                    if err_ply == Some(ply) {
+                        let vals: Vec<bool> = opts.iter().map(|o| wins_of(o, &mut sv)).collect();
+                        let w: Vec<usize> = (0..opts.len()).filter(|&i| vals[i]).collect();
+                        let l: Vec<usize> = (0..opts.len()).filter(|&i| !vals[i]).collect();
+                        if l.is_empty() { eprintln!("game {g}: no losing option at ply {ply}, game skipped"); skipped = true; break; }
+                        win = true;
+                        wins = w.len() as i32;
+                        rh_opt = if opts[0].0 { vals[0] as i32 } else { -1 };
+                        pick = l[rng.below(l.len())];
+                        logw += (l.len() as f64).log10();
+                    } else if ply % 2 != winning_side {
+                        win = false; wins = -1i32;
+                        rh_opt = if opts[0].0 { 0 } else { -1 };
+                        pick = rng.below(opts.len());
+                        logw += (opts.len() as f64).log10();
+                    } else {
+                        let vals: Vec<bool> = opts.iter().map(|o| wins_of(o, &mut sv)).collect();
+                        let w: Vec<usize> = (0..opts.len()).filter(|&i| vals[i]).collect();
+                        assert!(!w.is_empty(), "game {g} ply {ply}: no winning option in a position that should be won");
+                        win = true;
+                        rh_opt = if opts[0].0 { vals[0] as i32 } else { -1 };
+                        wins = w.len() as i32;
+                        pick = w[rng.below(w.len())];
+                        logw += (w.len() as f64).log10();
+                    }
+                    let o = opts.swap_remove(pick);
+                    let mut lk = out.lock();
+                    writeln!(lk, "P {g} {ply} {n} {p} {} {} {wins} {} {} {rh_opt} {} {:.0}", d0.count_ones(), opts.len() + 1, win as u8, o.0 as u8, sv.nodes - nodes0, now_ms() - t0).unwrap();
+                    lk.flush().unwrap();
+                    list = o.1;
+                    p = o.2;
+                    ply += 1;
+                }
+                if skipped { continue; }
+                let mut lk = out.lock();
+                writeln!(lk, "G {g} {ply} {logw:.4}").unwrap();
+                lk.flush().unwrap();
+            }
+        }
+        Some("isocost") => {
+            // hib isocost <positions> [tt_bits] : solve each position under both rules with the
+            // same solver settings, a fresh table per solve, no shared table, one thread.
+            // positions: lines "key stones" (stones comma-separated). Rows:
+            // "key n p std_value std_nodes std_ms rh_value rh_nodes rh_ms" (value 1 = mover wins).
+            use std::io::Write;
+            let bits: u32 = args.get(3).map(|s| s.parse().unwrap()).unwrap_or(24);
+            fn dm(v: &[u64]) -> u64 { v.iter().fold(!0u64, |a, &x| a & x) & ((1u64 << N) - 1) }
+            for l in std::fs::read_to_string(&args[2]).unwrap().lines() {
+                let mut f = l.split(' ');
+                let (Some(key), Some(st)) = (f.next(), f.next()) else { continue };
+                let stones: Vec<u8> = st.split(',').map(|x| x.parse().unwrap()).collect();
+                let mut list = u.to_list(&u.root());
+                for &c in &stones { list.retain(|x| (x >> c) & 1 == 1); }
+                let p = dm(&list).count_ones() as i32 - stones.len() as i32;
+                let mut sv = Solver::new(bits).with_symmetry();
+                let t = now_ms();
+                let a = sv.win(&list).ok().unwrap();
+                let (an, at) = (sv.nodes, now_ms() - t);
+                let mut sv = Solver::new(bits).with_symmetry();
+                let t = now_ms();
+                let b = sv.win_pass(&list, p).ok().unwrap();
+                let (bn, bt) = (sv.nodes, now_ms() - t);
+                println!("{key} {} {p} {} {an} {at:.0} {} {bn} {bt:.0}", list.len(), a as u8, b as u8);
+                std::io::stdout().flush().unwrap();
+            }
+        }
         Some("plines") => {
             // hib plines <count> <nmin> <nmax> [seed]: best lines (fastest win / longest
             // resistance) from random-game samples under the pass rule. One row per ply:

@@ -19,8 +19,9 @@ The puzzle and its solution set come from the author's Honey Islands real-time s
 | `verify/` | independent checker `hibverify`, written from the rules alone (std only, no symmetry, no shared tables) |
 | `results/normal`, `results/pass` | positions up to depth 3, edges, depth-3 results, winning depth-4 replies, first-move values, verifier outputs |
 | `results/<rule>/best-line.json` | the perfect-play lines of Section 5.1 (`hib pv2`) |
-| `results/analysis/` | game-length search on 1,000 positions (`lengths.txt`), 400 perfect-play lines under the redundant-hint rule (`plines.txt`), best-line raw output (`pv2-*.txt`), random-game size (`gamesize.txt`); summarized by `tools/analysis/pred_bc.py` |
-| `results/moves-sample.txt` | every move of 2,000 random late-game positions solved under both rules (Section 7) |
+| `results/analysis/` | best-line raw output (`pv2-*.txt`), random-game size (`gamesize.txt`) |
+| `results/positions/` | number of positions (Section 5.2): estimator walks and summary (`tools/analysis/count_positions.py`, `exact_big.py`) |
+| `results/pp/` | games sampled from the perfect-play tree (`hib ppgames`; `normal.txt`, `pass.txt`, and `*-err2.txt` with an error at move 3), their statistics and solver times (Sections 5.3, 7.2), and paired solves of 102 depth-3 positions (`hib isocost`; `iso-jobs.txt`, `isocost.txt`, `stats-iso.txt`, Section 7.3) |
 | `tools/` | data conversion and checks, wasm build, book export, analysis scripts |
 | `test/` | Node tests (JS reference engine, wasm engine, opening book, analysis) and match scripts |
 

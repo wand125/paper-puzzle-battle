@@ -1,0 +1,5 @@
+positions 102; values disagreeing with the stratum label: 0
+std=1 rh=1: n  30  nodes rh/std   0.355 [0.209, 0.610]  rh fewer in 23/30  median nodes std     711330 rh     323018  median s std    2.54 rh    1.69  max s std   291.7 rh    47.9
+std=1 rh=0: n  30  nodes rh/std   0.382 [0.237, 0.632]  rh fewer in 24/30  median nodes std    3270444 rh    1475822  median s std   10.57 rh   10.93  max s std  1046.5 rh    63.3
+std=0 rh=1: n  12  nodes rh/std   0.014 [0.008, 0.027]  rh fewer in 12/12  median nodes std   34919890 rh     332640  median s std  160.44 rh    3.38  max s std   625.2 rh    31.9
+std=0 rh=0: n  30  nodes rh/std   0.036 [0.031, 0.043]  rh fewer in 30/30  median nodes std   86357477 rh    2236381  median s std  367.72 rh   21.22  max s std  1985.0 rh    89.5

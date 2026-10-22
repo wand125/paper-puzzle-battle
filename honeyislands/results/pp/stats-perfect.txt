@@ -1,0 +1,36 @@
+== standard: 200 finished games
+  plies: mean 10.51 [10.25, 10.77] median 11 range 7 17
+  length histogram {7: 16, 9: 66, 11: 77, 13: 34, 15: 6, 17: 1}
+  perfect-play games (Knuth estimate), log10: 17.38 [15.26, 17.84]
+  winning-option share at winning positions, by move number (pooled):
+    move  1 (first player): positions   200  share 0.689 [0.689, 0.689]  mean options 61.0
+    move  3 (first player): positions   200  share 0.170 [0.156, 0.185]  mean options 59.0
+    move  5 (first player): positions   200  share 0.078 [0.071, 0.085]  mean options 57.0
+    move  7 (first player): positions   200  share 0.069 [0.064, 0.074]  mean options 54.5
+    move  9 (first player): positions   184  share 0.081 [0.074, 0.090]  mean options 44.3
+    move 11 (first player): positions   118  share 0.121 [0.105, 0.140]  mean options 30.6
+    move 13 (first player): positions    41  share 0.236 [0.172, 0.335]  mean options 15.2
+  share over all winning positions from ply 4: 0.084 [0.080, 0.087]
+  winning positions (ply>=4) with a single winning option: 0.091 [0.069, 0.112]
+  CPU seconds per game by ply: {0: 0.2, 4: 79.0, 6: 2.1}
+== redundant-hint: 200 finished games
+  plies: mean 10.87 [10.58, 11.17] median 11 range 7 19
+  length histogram {7: 10, 9: 65, 11: 74, 13: 35, 15: 12, 17: 3, 19: 1}
+  perfect-play games (Knuth estimate), log10: 21.49 [19.01, 21.97]
+  winning-option share at winning positions, by move number (pooled):
+    move  1 (first player): positions   200  share 1.000 [1.000, 1.000]  mean options 61.0
+    move  3 (first player): positions   200  share 0.954 [0.945, 0.963]  mean options 59.0
+    move  5 (first player): positions   200  share 0.509 [0.477, 0.540]  mean options 57.0
+    move  7 (first player): positions   200  share 0.189 [0.173, 0.205]  mean options 54.6
+    move  9 (first player): positions   190  share 0.123 [0.111, 0.138]  mean options 45.2
+    move 11 (first player): positions   125  share 0.156 [0.135, 0.182]  mean options 29.2
+    move 13 (first player): positions    51  share 0.277 [0.212, 0.373]  mean options 13.1
+    move 15 (first player): positions    16  share 0.398 [0.297, 0.556]  mean options 7.7
+  share over all winning positions from ply 4: 0.275 [0.262, 0.289]
+  winning positions (ply>=4) with a single winning option: 0.046 [0.033, 0.059]
+  games with a redundant hint played: 0.065 [0.035, 0.100]
+  redundant hints played: 20, per game 0.10; by winner 13, by loser 7
+  winning positions with a redundant hint available: 216; the hint wins in 33; it is the only winning option in 9
+  solutions left when a redundant hint is played: {4: 6, 6: 4, 8: 2, 9: 1, 12: 3, 14: 2, 99: 2}
+  first redundant hint at fraction 0.73 of the game (games with one)
+  CPU seconds per game by ply: {0: 0.2, 4: 68.6, 6: 1.5}

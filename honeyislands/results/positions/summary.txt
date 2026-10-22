@@ -1,0 +1,20 @@
+Number of positions (closed sets D with at least one solution), standard rule.
+Estimator: Knuth's estimator with importance sampling on the Close-by-One tree
+(tools/analysis/count_positions.py, ALPHA=1 BETA=0.15), 14,000 walks (seeds 11, 12; walks-*.jsonl).
+
+solutions left        estimate     standard error
+100000 or more        6.261e4+1    2.0e3
+10000 - 99999         4.396e7      2.0e6
+1000 - 9999           2.885e9      1.9e8
+100 - 999             2.455e10     2.3e9
+10 - 99               5.748e10     1.2e10
+2 - 9                 1.716e10     1.1e10
+all (2 or more)       1.021e11     1.9e10
+1 (terminal)          1,304,983 (exact; not reached by the walks)
+
+Checks
+- exact enumeration on random subsamples of 300, 300 and 400 solutions (count_positions.py check):
+  totals 3,352,270 / 3,481,393 / 6,310,083 versus estimates within z = +0.43 / -0.40 / +0.22.
+- exact count on the full solution set (tools/analysis/exact_big.py):
+  positions with at least 100,000 solutions: 62,031 (estimate 62,611 +- 2,000, z = +0.29);
+  positions with at least 300,000 solutions: 1,134.
