@@ -40,6 +40,17 @@
           <p id="error" class="error" role="alert" hidden></p>
         </div>
 
+        <section id="result" class="result-banner" aria-labelledby="result-title" aria-live="polite" hidden>
+          <div class="result-text">
+            <h2 id="result-title"></h2>
+            <p id="result-moves"></p>
+          </div>
+          <div class="result-actions">
+            <button type="button" id="play-again" class="primary" data-i18n="playAgain">Play again</button>
+            <button type="button" id="swap" data-i18n="swapSides">Swap sides</button>
+            <button type="button" id="change-settings" data-i18n="changeSettings">Change settings</button>
+          </div>
+        </section>
         <svg id="board" viewBox="0 4 100 92" role="group" aria-label="Hexagonal game board" aria-describedby="board-help"></svg>
         <p class="sr-only" id="board-help" data-i18n="boardHelp">Tab to a playable cell, then press Enter or Space to place a stone. Arrow keys move between playable cells.</p>
         <div class="legend" aria-label="Cell types" id="legend">
@@ -122,17 +133,6 @@
         <button class="primary start" type="submit" id="start" disabled data-i18n="start">Start game</button>
       </div>
     </form>
-  </dialog>
-  <dialog id="result" aria-labelledby="result-title" aria-describedby="result-moves">
-    <button type="button" id="close-result" class="close-result" aria-label="Close">×</button>
-    <p class="result-mark" aria-hidden="true">✓</p>
-    <h2 id="result-title"></h2>
-    <p id="result-moves"></p>
-    <div class="result-actions">
-      <button type="button" id="play-again" class="primary" data-i18n="playAgain">Play again</button>
-      <button type="button" id="swap" data-i18n="swapSides">Swap sides</button>
-      <button type="button" id="change-settings" data-i18n="changeSettings">Change settings</button>
-    </div>
   </dialog>
   <noscript><p class="noscript">このゲームには JavaScript が必要です。 / JavaScript is required to play.</p></noscript>
 </body>

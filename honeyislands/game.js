@@ -108,7 +108,7 @@ setChoice('rule', validated(store.get('hib-game-rule', 'normal'), ['normal', 'pa
 $('show-det').checked = store.get('hib-game-show-det', '1') !== '0';
 $('show-count').checked = store.get('hib-game-show-count', '1') !== '0';
 // the heat map is a live view option, shown both in the setup popup and next to the board
-let heat = store.get('hib-game-heat', '0') === '1';
+let heat = store.get('hib-game-heat', '1') === '1';
 for (const box of document.querySelectorAll('[data-heat]')) {
   box.checked = heat;
   box.addEventListener('change', () => {
@@ -149,7 +149,7 @@ function localize() {
   document.title = t('title');
   for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   for (const [id, key] of Object.entries({ 'language-toggle': 'language', 'theme-toggle': 'theme',
-    game: 'game', board: 'board', legend: 'cellTypes', progress: 'progress', 'close-result': 'close' })) {
+    game: 'game', board: 'board', legend: 'cellTypes', progress: 'progress', })) {
     $(id).setAttribute('aria-label', t(key));
   }
   for (const button of document.querySelectorAll('[data-language]')) {
@@ -284,7 +284,7 @@ function onWorkerMessage({ data }) {
       restoreBoardFocus = false;
       if (!resultShown) {
         resultShown = true;
-        $('result').showModal();
+        showResult();
         $('play-again').focus();
       }
     } else if (active && isAI(toMove())) {
@@ -341,15 +341,22 @@ function play(cell) {
     restoreBoardFocus = false;
     resultShown = true;
     render();
-    $('result').showModal();
+    showResult();
     $('play-again').focus();
     return;
   }
   restoreBoardFocus = board.contains(document.activeElement);
   placeStone(cell);
 }
+// the result appears above the board so the final position stays visible
+function showResult() {
+  $('result').hidden = false;
+  $('status').hidden = true;      // the banner says who won
+  $('result').scrollIntoView({ block: 'nearest', behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+}
 function closeResult() {
-  if ($('result').open) $('result').close();
+  $('result').hidden = true;
+  $('status').hidden = false;
 }
 function startGame(next = setupChoices()) {
   if (!ready || failure) return;
@@ -544,10 +551,8 @@ $('swap').addEventListener('click', () => {
   renderSetup();
   startGame({ ...settings, mode });
 });
-$('close-result').addEventListener('click', closeResult);
 $('setup-cancel').addEventListener('click', () => $('setup').close());
 $('setup').addEventListener('cancel', event => { if (!active) event.preventDefault(); });
-$('result').addEventListener('close', () => { if (active) $('new-game').focus({ preventScroll: true }); });
 for (const button of document.querySelectorAll('[data-language]')) {
   button.addEventListener('click', () => {
     lang = button.dataset.language;
