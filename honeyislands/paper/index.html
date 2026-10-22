@@ -85,8 +85,9 @@
 <p>We enumerated every position up to depth 3 together with the edges between them, and solved each of the 3,122 depth-3 positions as an independent job. Values were backed up by negamax: a position wins if and only if some child loses. While solving, the values of large positions (at least 3,000 solutions) were exported. These files were merged every 30 minutes and distributed to all workers, so machines did not re-solve each other's sub-positions. Once the root was decided, positions it no longer needed were postponed, and the rest were ordered by proof numbers. All 3,122 positions were still solved to complete the book.</p>
 <h3>4.3 Computation</h3>
 <p>The standard rule ran on 2026-10-22 on two home PCs and two cloud virtual machines that had spare capacity. It took 121.7 CPU-hours and 58.8 billion search nodes, and 3,523,789 large positions were shared between machines. The redundant-hint rule ran afterwards on one home PC: 7.0 CPU-hours and 2.65 billion nodes, with 203,010 shared positions.</p>
-<div class="scroll"><table>
-<caption>Standard rule: depth-3 positions by machine (machine names withheld). Wall-clock time was about 3.3 hours from the first progress record to completion.</caption>
+<p class="tcap" id="tcap1">Standard rule: depth-3 positions by machine (machine names withheld). Wall-clock time was about 3.3 hours from the first progress record to completion.</p>
+<div class="scroll"><table aria-labelledby="tcap1">
+
 <thead><tr><th>Machine</th><th>Positions solved</th><th>CPU-hours</th><th>Nodes (billions)</th></tr></thead>
 <tbody>
 <tr><td>Home PC A</td><td>1,670</td><td>30.2</td><td>25.59</td></tr>
@@ -101,8 +102,9 @@
 
 <section id="results">
 <h2>5. Results</h2>
-<div class="scroll"><table>
-<caption>Values by depth (canonical positions; “win” = the player to move wins)</caption>
+<p class="tcap" id="tcap2">Values by depth (canonical positions; “win” = the player to move wins)</p>
+<div class="scroll"><table aria-labelledby="tcap2">
+
 <thead><tr><th>Depth</th><th>Positions</th><th>Standard: win / loss</th><th>Redundant-hint rule: win / loss</th></tr></thead>
 <tbody>
 <tr><td>0 (initial)</td><td>1</td><td>1 / 0</td><td>1 / 0</td></tr>
@@ -120,8 +122,9 @@
 <p>Under the standard rule the first player wins in <strong>19 plies</strong>. The game-length search takes over at move 6, with 968 solutions; from there each move removes only a few solutions. Under the redundant-hint rule the first player wins in <strong>23 plies</strong>. Move 7 cuts 220 solutions to 4 and determines 14 black cells besides its own. The next 14 moves are all redundant hints, played alternately, and then two regular moves finish the game (animated in Section 2; data: <a href="../results/normal/best-line.json">standard</a>, <a href="../results/pass/best-line.json">redundant-hint rule</a>, <code>hib pv2</code>). The four solutions remain throughout the redundant hints. After them the second player is to move with four solutions and no redundant hint left, a lost position. Such long runs of redundant hints are a product of this tie-break; they are rare in sampled perfect play (Section 7.2).</p>
 <h3>5.2 Game size</h3>
 <p><strong>Number of positions.</strong> By the Proposition of Section 3, a position under the standard rule is a cell set <var>D</var> that is the intersection of a nonempty family of solutions, and every such set is reachable by placing its cells as stones. We estimated the number of these sets with Knuth’s estimator <a href="#r-knuth">[12]</a> on the Close-by-One enumeration tree <a href="#r-kuznetsov">[13]</a>, using importance sampling (a child is chosen with probability proportional to its number of solutions times 2<sup>0.15<var>m</var></sup>, where <var>m</var> is the number of cells the Close-by-One order still allows it to add) and 14,000 random root-to-leaf walks. Positions are counted without symmetry reduction.</p>
-<div class="scroll"><table>
-<caption>Number of positions under the standard rule by solutions left (<code>tools/analysis/count_positions.py</code>; <a href="../results/positions/summary.txt">data</a>)</caption>
+<p class="tcap" id="tcap3">Number of positions under the standard rule by solutions left (<code>tools/analysis/count_positions.py</code>; <a href="../results/positions/summary.txt">data</a>)</p>
+<div class="scroll"><table aria-labelledby="tcap3">
+
 <thead><tr><th>Solutions left</th><th>Positions</th><th>Standard error</th></tr></thead>
 <tbody>
 <tr><td>100,000 or more</td><td>62,031 (exact)</td><td>–</td></tr>
@@ -135,15 +138,17 @@
 </tbody></table></div>
 <p>We checked the estimator in two ways. On three random subsets of 300–400 solutions, exact enumeration and the estimate agree (z = +0.43, −0.40, +0.22). On the full solution set, an exact count of the positions with at least 100,000 solutions gives 62,031, against an estimate of 62,611 ± 2,000. The relative standard error is 19% for the total and largest for positions with few solutions. Under the redundant-hint rule a position also carries <var>p</var>, so its number of positions is at least as large; we did not estimate it.</p>
 <p><strong>Game length.</strong> To measure the size of the game we played 20,000 random games under each rule, choosing every legal move with equal probability (a redundant hint counts as one move). Under the standard rule a game lasts on average 11.23 plies (median 11; 90% of games take 8–14 plies; range 6–19). Under the redundant-hint rule it lasts 12.61 plies (median 12; 9–18; range 5–25), with 1.40 redundant hints per game. The number of legal moves stays near 61 for the first six plies, then falls quickly as the solutions run out; redundant hints keep it higher late in the game. The number of distinct positions after 1, 2 and 3 moves is 9, 180 and 3,122 up to symmetry (the table above).</p>
-<div class="scroll"><table>
-<caption>Mean number of legal moves by ply in random games (<code>hib gamesize</code>; <a href="../results/analysis/gamesize.txt">data</a>)</caption>
+<p class="tcap" id="tcap4">Mean number of legal moves by ply in random games (<code>hib gamesize</code>; <a href="../results/analysis/gamesize.txt">data</a>)</p>
+<div class="scroll"><table aria-labelledby="tcap4">
+
 <thead><tr><th>Ply</th><th>0</th><th>4</th><th>6</th><th>8</th><th>10</th><th>12</th><th>14</th><th>16</th><th>18</th></tr></thead>
 <tbody>
 <tr><td>Standard</td><td>61.0</td><td>57.0</td><td>53.9</td><td>42.6</td><td>26.0</td><td>15.3</td><td>10.3</td><td>8.6</td><td>6.0</td></tr>
 <tr><td>Redundant-hint rule</td><td>61.0</td><td>57.0</td><td>53.9</td><td>44.3</td><td>30.1</td><td>20.3</td><td>15.2</td><td>12.0</td><td>9.6</td></tr>
 </tbody></table></div>
-<div class="scroll"><table>
-<caption>Plies to the end of the game</caption>
+<p class="tcap" id="tcap5">Plies to the end of the game</p>
+<div class="scroll"><table aria-labelledby="tcap5">
+
 <thead><tr><th></th><th>Standard</th><th>Redundant-hint rule</th></tr></thead>
 <tbody>
 <tr><td>random games (mean of 20,000)</td><td>11.23</td><td>12.61</td></tr>
@@ -155,8 +160,9 @@
 <p>Allis <a href="#r-allis">[1]</a> distinguishes three levels. A game is <em>ultra-weakly solved</em> if the value of the initial position is known, <em>weakly solved</em> if a strategy that achieves this value from the initial position is known for both players under reasonable resources, and <em>strongly solved</em> if such a strategy is known from every legal position.</p>
 <p>The computation of Section 4 gives more than the value. For every reply of the second player, the book names a first-player move to a depth-3 position that the solver proved lost for the player to move, and each such proof is a complete search of that position’s subtree. A winning strategy for the first player is therefore fixed by the proof; beyond depth 3 it is not stored but recomputed by the solver when needed. For the second player, whose value is a loss, every strategy attains that value.</p>
 <p>We measured the cost of this recomputation in the 715 sampled games of Section 7.2. At each winning position the solver valued every move, which is more work than finding one winning move. The shared table of Section 4 was loaded, and the transposition table was kept across the ten games of a run; the times are for one thread of a desktop CPU (AMD Ryzen 9 9950X).</p>
-<div class="scroll"><table>
-<caption>Time to value every move of a winning position in sampled games (<a href="../results/pp/time-per-position.txt">data</a>)</caption>
+<p class="tcap" id="tcap6">Time to value every move of a winning position in sampled games (<a href="../results/pp/time-per-position.txt">data</a>)</p>
+<div class="scroll"><table aria-labelledby="tcap6">
+
 <thead><tr><th>Positions</th><th>Standard: median / max</th><th>Redundant-hint rule: median / max</th></tr></thead>
 <tbody>
 <tr><td>first winning position outside the book (move 5; move 4 after an error at move 3)</td><td>12.6 s / 20.4 min</td><td>5.7 s / 6.2 min</td></tr>
@@ -177,8 +183,9 @@
 <h2>7. Comparing the two rules</h2>
 <h3>7.1 Exact values near the root</h3>
 <p>Through depth 3 the two rules have the same moves and the same positions; a redundant hint first becomes available at depth 3, in one of the 3,122 positions. The values nevertheless differ, because redundant hints become available later in the game. At depth 3 the value differs in 2,537 positions (81%).</p>
-<div class="scroll"><table>
-<caption>Depth-3 positions by value under each rule (“win” = the player to move, here the second player, wins; <code>tools/analysis/exact_shallow.py</code>)</caption>
+<p class="tcap" id="tcap7">Depth-3 positions by value under each rule (“win” = the player to move, here the second player, wins; <code>tools/analysis/exact_shallow.py</code>)</p>
+<div class="scroll"><table aria-labelledby="tcap7">
+
 <thead><tr><th></th><th>Redundant-hint rule: win</th><th>Redundant-hint rule: loss</th></tr></thead>
 <tbody>
 <tr><td>Standard: win</td><td>125</td><td>2,525</td></tr>
@@ -187,8 +194,9 @@
 <p>The share of winning moves differs as well. At move 1, 42 of 61 moves win under the standard rule and all 61 under the redundant-hint rule. At move 2 the second player has winning moves only under the standard rule: 23 of the 180 moves in the three winning depth-1 positions. At move 3, over all winning depth-2 positions, 15.1% of the moves win under the standard rule (1,555 of 10,325) and 95.4% under the redundant-hint rule (10,131 of 10,620).</p>
 <h3>7.2 Perfect play sampled from the game tree</h3>
 <p>Beyond depth 3 we sampled games from the perfect-play tree. At a winning position the player to move chooses uniformly among the moves that keep the win; at a losing position, uniformly among all moves. Moves that lead to the same position (the same <var>D</var>, and under the redundant-hint rule the same <var>p</var>) count as one move. Every move of every winning position on the path is valued exactly by the solver (<code>hib ppgames</code>). In these games the first player is always the winning side. To observe the second player as the winning side, we also sampled games in which the first player makes one error at move 3, chosen uniformly among its losing moves, and both players play perfectly afterwards. We sampled 200 games of each kind under each rule. Under the redundant-hint rule, 85 of the 200 error games were discarded because move 3 had no losing move; the remaining 115 are conditioned on such a move existing, so the second-player rows of the two rules are not directly comparable. Intervals are 95% bootstrap intervals over games.</p>
-<div class="scroll"><table>
-<caption>Share of winning moves at winning positions, by move number (<code>tools/analysis/pp_stats.py</code>; <a href="../results/pp/stats-perfect.txt">perfect play</a>, <a href="../results/pp/stats-err2.txt">error at move 3</a>). Move 1 is exact.</caption>
+<p class="tcap" id="tcap8">Share of winning moves at winning positions, by move number (<code>tools/analysis/pp_stats.py</code>; <a href="../results/pp/stats-perfect.txt">perfect play</a>, <a href="../results/pp/stats-err2.txt">error at move 3</a>). Move 1 is exact.</p>
+<div class="scroll"><table aria-labelledby="tcap8">
+
 <thead><tr><th>Move</th><th>Winning side</th><th>Standard</th><th>Redundant-hint rule</th></tr></thead>
 <tbody>
 <tr><td>1</td><td>first</td><td>0.689</td><td>1.000</td></tr>
@@ -210,8 +218,9 @@
 <p><strong>Redundant hints in perfect play.</strong> In the 200 sampled perfect-play games under the redundant-hint rule, 20 redundant hints were played, in 13 games (6.5% [3.5%, 10.0%]): 13 by the winner and 7 by the loser. In 216 winning positions a redundant hint was available; it was a winning move in 33 of them and the only winning move in 9.</p>
 <h3>7.3 Cost of solving the same positions</h3>
 <p>The main computation used 2.65 billion nodes for the redundant-hint rule against 58.8 billion for the standard rule. This ratio does not compare like with like: the two runs used different shared tables, job orders and machines. We therefore solved a sample of depth-3 positions under both rules with identical settings: a fresh transposition table of 2<sup>24</sup> entries for each solve, symmetry reduction, no shared table and one thread (<code>hib isocost</code>, AMD Ryzen 9 9950X). The 3,121 depth-3 positions without a redundant hint were stratified by their pair of values, and up to 30 were drawn at random from each stratum.</p>
-<div class="scroll"><table>
-<caption>Paired solving cost at depth 3 (“win” = the player to move wins; <code>tools/analysis/iso_stats.py</code>; <a href="../results/pp/stats-iso.txt">data</a>). The node ratio is the geometric mean of redundant-hint-rule nodes over standard-rule nodes. The win/win stratum has 124 positions here because the one depth-3 position with a redundant hint is excluded.</caption>
+<p class="tcap" id="tcap9">Paired solving cost at depth 3 (“win” = the player to move wins; <code>tools/analysis/iso_stats.py</code>; <a href="../results/pp/stats-iso.txt">data</a>). The node ratio is the geometric mean of redundant-hint-rule nodes over standard-rule nodes. The win/win stratum has 124 positions here because the one depth-3 position with a redundant hint is excluded.</p>
+<div class="scroll"><table aria-labelledby="tcap9">
+
 <thead><tr><th>Standard / redundant-hint rule</th><th>Positions</th><th>Sampled</th><th>Node ratio [95%]</th><th>Fewer nodes under the redundant-hint rule</th><th>Median seconds (standard / redundant-hint)</th></tr></thead>
 <tbody>
 <tr><td>win / win</td><td>124</td><td>30</td><td>0.36 [0.21, 0.61]</td><td>23 / 30</td><td>2.5 / 1.7</td></tr>
@@ -356,8 +365,9 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 <p>深さ 3 までの全局面とそのつながりを列挙し、深さ 3 の 3,122 局面をそれぞれ独立したジョブとして解いた。勝敗は negamax でさかのぼった（子のどれかが負けなら勝ち）。解いている間、大きな局面（解 3,000 通り以上）の勝敗を書き出した。これを 30 分ごとにまとめて全台へ配り、他のマシンが解いた部分局面を解き直さないようにした。初期局面が決まったあとは、その証明に要らない局面を後回しにし、残りは証明数の順に解いた。定石を完成させるため、最終的には 3,122 局面すべてを解いた。</p>
 <h3>4.3 計算</h3>
 <p>標準ルールは 2026-10-22 に、空いていた家庭の PC 2 台とクラウドの仮想マシン 2 台で計算した。121.7 CPU 時間・588 億局面で、マシン間で共有した大きな局面は 3,523,789 個である。余剰ヒントありはその後、家庭の PC 1 台で計算した。7.0 CPU 時間・26.5 億局面で、共有した局面は 203,010 個である。</p>
-<div class="scroll"><table>
-<caption>標準ルール：マシンごとの深さ 3 局面（マシン名は伏せた）。最初の進捗記録から完了まで、実時間で約 3.3 時間。</caption>
+<p class="tcap" id="tcap10">標準ルール：マシンごとの深さ 3 局面（マシン名は伏せた）。最初の進捗記録から完了まで、実時間で約 3.3 時間。</p>
+<div class="scroll"><table aria-labelledby="tcap10">
+
 <thead><tr><th>マシン</th><th>解いた局面</th><th>CPU 時間</th><th>探索局面（10 億）</th></tr></thead>
 <tbody>
 <tr><td>家庭の PC A</td><td>1,670</td><td>30.2</td><td>25.59</td></tr>
@@ -372,8 +382,9 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 
 <section id="ja-results">
 <h2>5. 結果</h2>
-<div class="scroll"><table>
-<caption>深さごとの勝敗（正規局面の数。「勝ち」は手番の人の勝ち）</caption>
+<p class="tcap" id="tcap11">深さごとの勝敗（正規局面の数。「勝ち」は手番の人の勝ち）</p>
+<div class="scroll"><table aria-labelledby="tcap11">
+
 <thead><tr><th>深さ</th><th>局面数</th><th>標準：勝ち / 負け</th><th>余剰ヒントあり：勝ち / 負け</th></tr></thead>
 <tbody>
 <tr><td>0（初期局面）</td><td>1</td><td>1 / 0</td><td>1 / 0</td></tr>
@@ -391,8 +402,9 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 <p>標準ルールでは <strong>19 手</strong>で先手が勝つ。6 手目、解 968 通りの局面から手数の完全読みに切り替わる。以降は 1 手で減る解が数通りずつになる。余剰ヒントありでは <strong>23 手</strong>で先手が勝つ。7 手目で解が 220 通りから 4 通りに減り、自分のマスのほかに 14 マスが黒に確定する。続く 14 手では交互に余剰ヒントを置き、そのあと通常の 2 手で終わる（2 節の動画。データ：<a href="../results/normal/best-line.json">標準</a>、<a href="../results/pass/best-line.json">余剰ヒントあり</a>、<code>hib pv2</code>）。余剰ヒントのあいだ、解は 4 通りのまま変わらない。14 回の余剰ヒントのあとは、解 4 通り・余剰ヒント 0 回で後手の手番になり、これは負け局面である。このように余剰ヒントが長く続くのはこの選び方によるもので、サンプリングした最善進行ではまれである（7.2 節）。</p>
 <h3>5.2 ゲームの規模</h3>
 <p><strong>局面の総数.</strong> 3 節の命題より、標準ルールの局面は「空でない解の族の共通部分として表せるマスの集合 <var>D</var>」であり、そうした集合はどれも、そのマスに石を置いていけば到達できる。この集合の数を、Close-by-One の列挙木 <a href="#ja-r-kuznetsov">[13]</a> 上で Knuth の推定法 <a href="#ja-r-knuth">[12]</a> に重点サンプリング（子を選ぶ確率を、その解の数 × 2<sup>0.15<var>m</var></sup> に比例させる。<var>m</var> は Close-by-One の順序でその子がまだ加えうるマスの数）を組み合わせ、根から葉への無作為な経路 14,000 本で推定した。対称性ではまとめずに数えている。</p>
-<div class="scroll"><table>
-<caption>標準ルールの局面数（残りの解の数ごと。<code>tools/analysis/count_positions.py</code>、<a href="../results/positions/summary.txt">データ</a>）</caption>
+<p class="tcap" id="tcap12">標準ルールの局面数（残りの解の数ごと。<code>tools/analysis/count_positions.py</code>、<a href="../results/positions/summary.txt">データ</a>）</p>
+<div class="scroll"><table aria-labelledby="tcap12">
+
 <thead><tr><th>残りの解</th><th>局面数</th><th>標準誤差</th></tr></thead>
 <tbody>
 <tr><td>100,000 以上</td><td>62,031（厳密）</td><td>–</td></tr>
@@ -406,15 +418,17 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 </tbody></table></div>
 <p>推定法は 2 通りで確かめた。無作為に選んだ 300〜400 通りの解の部分集合 3 つでは、厳密な列挙と推定値が一致した（z = +0.43, −0.40, +0.22）。全解については、解 100,000 通り以上の局面を厳密に数えると 62,031 で、推定値 62,611 ± 2,000 と合う。総数の相対標準誤差は 19% で、解の少ない局面ほど大きい。余剰ヒントありでは局面が <var>p</var> ももつので、局面数はこれ以上になる。こちらは推定していない。</p>
 <p><strong>手数.</strong> ゲームの規模を測るため、各ルールでランダムな対局を 20,000 局ずつ行った。合法手をすべて等しい確率で選ぶ（余剰ヒントも 1 手として数える）。標準ルールでは対局は平均 11.23 手（中央値 11、90% が 8〜14 手、最短 6・最長 19）だった。余剰ヒントありでは平均 12.61 手（中央値 12、9〜18 手、最短 5・最長 25）で、1 局あたり余剰ヒントを 1.40 回置く。合法手の数は最初の 6 手ほどは 61 近くを保ち、そのあと解が減るにつれて急に減る。余剰ヒントがあると終盤の合法手は多めに残る。対称性を除いた局面数は、1 手目のあと 9、2 手目のあと 180、3 手目のあと 3,122 である（上の表）。</p>
-<div class="scroll"><table>
-<caption>ランダムな対局での手数ごとの合法手の平均（<code>hib gamesize</code>、<a href="../results/analysis/gamesize.txt">データ</a>）</caption>
+<p class="tcap" id="tcap13">ランダムな対局での手数ごとの合法手の平均（<code>hib gamesize</code>、<a href="../results/analysis/gamesize.txt">データ</a>）</p>
+<div class="scroll"><table aria-labelledby="tcap13">
+
 <thead><tr><th>手数</th><th>0</th><th>4</th><th>6</th><th>8</th><th>10</th><th>12</th><th>14</th><th>16</th><th>18</th></tr></thead>
 <tbody>
 <tr><td>標準</td><td>61.0</td><td>57.0</td><td>53.9</td><td>42.6</td><td>26.0</td><td>15.3</td><td>10.3</td><td>8.6</td><td>6.0</td></tr>
 <tr><td>余剰ヒントあり</td><td>61.0</td><td>57.0</td><td>53.9</td><td>44.3</td><td>30.1</td><td>20.3</td><td>15.2</td><td>12.0</td><td>9.6</td></tr>
 </tbody></table></div>
-<div class="scroll"><table>
-<caption>終局までの手数</caption>
+<p class="tcap" id="tcap14">終局までの手数</p>
+<div class="scroll"><table aria-labelledby="tcap14">
+
 <thead><tr><th></th><th>標準</th><th>余剰ヒントあり</th></tr></thead>
 <tbody>
 <tr><td>ランダムな対局（20,000 局の平均）</td><td>11.23</td><td>12.61</td></tr>
@@ -426,8 +440,9 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 <p>Allis <a href="#ja-r-allis">[1]</a> は 3 つの水準を区別している。初期局面の値が分かっていれば<em>超弱解決</em>、初期局面からその値を実現する戦略が両者について妥当な計算資源のもとで分かっていれば<em>弱解決</em>、すべての合法局面からそうした戦略が分かっていれば<em>強解決</em>である。</p>
 <p>4 節の計算が与えるのは値だけではない。後手のどの応手に対しても、定石は、手番の人の負けとソルバーが証明した深さ 3 の局面へ進む先手の手を示す。その証明はどれも、その局面より先の部分木をすべて探索したものである。したがって先手の勝ち戦略は証明によって定まっている。深さ 3 より先の戦略は保存しておらず、必要なときにソルバーが計算し直す。後手の値は負けであり、どの戦略でもその値になる。</p>
 <p>この計算し直しの時間を、7.2 節でサンプリングした 715 局で測った。勝ち局面ではソルバーが全部の手の勝敗を求めており、勝ち手を 1 つ見つけるより多くの仕事をしている。4 節の共有表を読み込み、置換表は 1 回の実行の 10 局を通して持ち越した。時間はデスクトップ CPU（AMD Ryzen 9 9950X）の 1 スレッドでのものである。</p>
-<div class="scroll"><table>
-<caption>サンプリングした対局で、勝ち局面の全部の手の勝敗を求める時間（<a href="../results/pp/time-per-position.txt">データ</a>）</caption>
+<p class="tcap" id="tcap15">サンプリングした対局で、勝ち局面の全部の手の勝敗を求める時間（<a href="../results/pp/time-per-position.txt">データ</a>）</p>
+<div class="scroll"><table aria-labelledby="tcap15">
+
 <thead><tr><th>局面</th><th>標準：中央値 / 最大</th><th>余剰ヒントあり：中央値 / 最大</th></tr></thead>
 <tbody>
 <tr><td>定石の外で最初の勝ち局面（5 手目。3 手目の誤りのあとは 4 手目）</td><td>12.6 秒 / 20.4 分</td><td>5.7 秒 / 6.2 分</td></tr>
@@ -448,8 +463,9 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 <h2>7. ルールの比較</h2>
 <h3>7.1 根に近い局面での正確な勝敗</h3>
 <p>深さ 3 までは、2 つのルールで打てる手も局面も同じである。余剰ヒントが初めて使えるようになるのは深さ 3 で、3,122 局面のうち 1 局面だけである。それでも勝敗は異なる。余剰ヒントがその先で使えるようになるからである。深さ 3 では 2,537 局面（81%）で勝敗が異なる。</p>
-<div class="scroll"><table>
-<caption>深さ 3 の局面の、各ルールでの勝敗（「勝ち」は手番の人、ここでは後手の勝ち。<code>tools/analysis/exact_shallow.py</code>）</caption>
+<p class="tcap" id="tcap16">深さ 3 の局面の、各ルールでの勝敗（「勝ち」は手番の人、ここでは後手の勝ち。<code>tools/analysis/exact_shallow.py</code>）</p>
+<div class="scroll"><table aria-labelledby="tcap16">
+
 <thead><tr><th></th><th>余剰ヒントあり：勝ち</th><th>余剰ヒントあり：負け</th></tr></thead>
 <tbody>
 <tr><td>標準：勝ち</td><td>125</td><td>2,525</td></tr>
@@ -458,8 +474,9 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 <p>勝ち手の割合も異なる。1 手目では、標準ルールで 61 手中 42 手、余剰ヒントありで 61 手すべてが勝ち手である。2 手目で後手に勝ち手があるのは標準ルールだけで、勝ちである深さ 1 の 3 局面の 180 手のうち 23 手である。3 手目では、勝ちである深さ 2 の局面全体で、勝ち手は標準ルールで 15.1%（10,325 手中 1,555 手）、余剰ヒントありで 95.4%（10,620 手中 10,131 手）である。</p>
 <h3>7.2 ゲーム木からサンプリングした最善進行</h3>
 <p>深さ 3 より先については、最善進行の木から対局をサンプリングした。勝ち局面では、手番の人は勝ちを保つ手の中から一様に選ぶ。負け局面では、すべての手の中から一様に選ぶ。同じ局面（同じ <var>D</var>、余剰ヒントありでは同じ <var>p</var>）に進む手は 1 手と数える。経路上の勝ち局面では、すべての手の勝敗をソルバーで正確に求めた（<code>hib ppgames</code>）。この対局では、勝つ側は常に先手である。後手が勝つ側になる場合を見るため、先手が 3 手目に負け手の中から一様に選んで 1 回だけ誤り、その後は両者が最善を尽くす対局もサンプリングした。各ルールで、それぞれ 200 局をサンプリングした。余剰ヒントありの誤りのある対局では、3 手目に負け手がなかった 85 局を除いた。残る 115 局は、負け手が存在するという条件付きの標本であり、後手の行は 2 つのルールで直接は比べられない。区間は対局単位のブートストラップによる 95% 区間である。</p>
-<div class="scroll"><table>
-<caption>勝ち局面のうち勝ち手の割合（手数ごと。<code>tools/analysis/pp_stats.py</code>、<a href="../results/pp/stats-perfect.txt">最善進行</a>、<a href="../results/pp/stats-err2.txt">3 手目に誤り</a>）。1 手目は厳密値。</caption>
+<p class="tcap" id="tcap17">勝ち局面のうち勝ち手の割合（手数ごと。<code>tools/analysis/pp_stats.py</code>、<a href="../results/pp/stats-perfect.txt">最善進行</a>、<a href="../results/pp/stats-err2.txt">3 手目に誤り</a>）。1 手目は厳密値。</p>
+<div class="scroll"><table aria-labelledby="tcap17">
+
 <thead><tr><th>手</th><th>勝つ側</th><th>標準</th><th>余剰ヒントあり</th></tr></thead>
 <tbody>
 <tr><td>1</td><td>先手</td><td>0.689</td><td>1.000</td></tr>
@@ -481,8 +498,9 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 <p><strong>最善進行での余剰ヒント.</strong> 余剰ヒントありでサンプリングした最善進行 200 局では、余剰ヒントは 13 局（6.5% [3.5%, 10.0%]）で計 20 回置かれた。勝つ側が 13 回、負ける側が 7 回である。余剰ヒントが使えた勝ち局面は 216 あり、そのうち 33 局面で余剰ヒントが勝ち手、9 局面で唯一の勝ち手だった。</p>
 <h3>7.3 同じ局面を解く計算量</h3>
 <p>本計算の探索局面数は、余剰ヒントありで 26.5 億、標準ルールで 588 億だった。ただしこの比は同じ条件での比較ではない。2 つの計算は共有表、ジョブの順序、マシンが異なる。そこで深さ 3 の局面の標本を、両ルールとも同じ設定で解いた。1 回の求解ごとに新しい 2<sup>24</sup> 項目の置換表を使い、対称性でまとめ、共有表は使わず、1 スレッドで解く（<code>hib isocost</code>、AMD Ryzen 9 9950X）。余剰ヒントのない深さ 3 の 3,121 局面を勝敗の組で層に分け、各層から最大 30 局面を無作為に選んだ。</p>
-<div class="scroll"><table>
-<caption>深さ 3 の局面を両ルールで解いた計算量の対比較（「勝ち」は手番の人の勝ち。<code>tools/analysis/iso_stats.py</code>、<a href="../results/pp/stats-iso.txt">データ</a>）。局面数の比は、余剰ヒントありの探索局面数を標準ルールの探索局面数で割った値の幾何平均。勝ち / 勝ちの層が 124 局面なのは、余剰ヒントが使える深さ 3 の 1 局面を除いたためである。</caption>
+<p class="tcap" id="tcap18">深さ 3 の局面を両ルールで解いた計算量の対比較（「勝ち」は手番の人の勝ち。<code>tools/analysis/iso_stats.py</code>、<a href="../results/pp/stats-iso.txt">データ</a>）。局面数の比は、余剰ヒントありの探索局面数を標準ルールの探索局面数で割った値の幾何平均。勝ち / 勝ちの層が 124 局面なのは、余剰ヒントが使える深さ 3 の 1 局面を除いたためである。</p>
+<div class="scroll"><table aria-labelledby="tcap18">
+
 <thead><tr><th>標準 / 余剰ヒントあり</th><th>局面数</th><th>標本</th><th>局面数の比 [95%]</th><th>余剰ヒントありの方が少ない</th><th>秒の中央値（標準 / 余剰ヒントあり）</th></tr></thead>
 <tbody>
 <tr><td>勝ち / 勝ち</td><td>124</td><td>30</td><td>0.36 [0.21, 0.61]</td><td>23 / 30</td><td>2.5 / 1.7</td></tr>

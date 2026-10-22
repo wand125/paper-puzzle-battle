@@ -18,7 +18,8 @@ h3{font-size:1.05rem;margin:1.4rem 0 .4rem}
 .note{font-size:.88rem;color:var(--muted)}
 .scroll{overflow-x:auto}
 table{border-collapse:collapse;margin:1rem 0;font-size:.93rem}
-caption{text-align:left;color:var(--muted);font-size:.88rem;padding-bottom:.3rem}
+caption,.tcap{text-align:left;color:var(--muted);font-size:.88rem;padding-bottom:.3rem}
+.tcap{margin:1rem 0 0}.tcap+.scroll table{margin-top:.2rem}
 th,td{border-bottom:1px solid var(--line);padding:.35rem .7rem;text-align:left}
 td:not(:first-child),th:not(:first-child){text-align:right}
 pre{background:var(--cell);padding:.8rem;overflow-x:auto;font-size:.82rem;line-height:1.5}
@@ -57,3 +58,20 @@ figcaption{font-size:.88rem;color:var(--muted);text-align:center}
 .pa-info{min-height:4.9em}
 .sw.ex-black{background:#000}
 .sw.pa-dot{background-image:radial-gradient(circle,var(--win) 28%,transparent 32%)}
+/* tables never squeeze numbers onto two lines; a table wider than the screen scrolls sideways inside its box */
+.scroll{-webkit-overflow-scrolling:touch;background:linear-gradient(to right,var(--bg) 30%,transparent) left/2rem 100% no-repeat local,linear-gradient(to left,var(--bg) 30%,transparent) right/2rem 100% no-repeat local,radial-gradient(farthest-side at 0 50%,#0002,transparent) left/.7rem 100% no-repeat scroll,radial-gradient(farthest-side at 100% 50%,#0002,transparent) right/.7rem 100% no-repeat scroll}
+td:not(:first-child){white-space:nowrap}
+th{word-break:keep-all;overflow-wrap:normal}
+@media(max-width:640px){
+  main{padding:1rem 1rem 2rem}
+  h1{font-size:1.55rem}
+  .lead{font-size:1rem}
+  h2{font-size:1.2rem;margin-top:1.8rem}
+  table{font-size:.8rem;margin:.6rem 0}
+  th,td{padding:.3rem .45rem}
+  th:first-child,td:first-child{padding-left:0;min-width:6.5em}
+  caption,.tcap{font-size:.8rem}
+  figcaption,.note{font-size:.82rem}
+  pre{font-size:.75rem;margin-left:-1rem;margin-right:-1rem}
+  .math,mjx-container,.katex-display{overflow-x:auto;overflow-y:hidden}
+}
