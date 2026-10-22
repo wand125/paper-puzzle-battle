@@ -1,0 +1,2 @@
+results/playout/normal.txt: positions 3122 (won 2650, lost 472)  AUC 0.514 [0.487, 0.542]  mean playout win rate: won 0.499, lost 0.498
+results/playout/pass.txt: positions 3122 (won 137, lost 2985)  AUC 0.452 [0.401, 0.502]  mean playout win rate: won 0.495, lost 0.500

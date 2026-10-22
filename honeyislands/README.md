@@ -23,6 +23,7 @@ The puzzle and its solution set come from the author's Honey Islands real-time s
 | `results/<rule>/best-line.json` | the perfect-play lines of Section 5.1 (`hib pv2`) |
 | `results/analysis/` | best-line raw output (`pv2-*.txt`), random-game size (`gamesize.txt`) |
 | `results/positions/` | number of positions (Section 5.2): estimator walks and summary (`tools/analysis/count_positions.py`, `exact_big.py`) |
+| `results/playout/` | random playouts from every depth-3 position (`hib playauc`, 200 per position) and their AUC (`auc.txt`, `tools/analysis/playout_auc.py`; Section 8) |
 | `results/pp/` | games sampled from the perfect-play tree (`hib ppgames`; `normal.txt`, `pass.txt`, and `*-err2.txt` with an error at move 3), their statistics and solver times (Sections 5.3, 7.2), and paired solves of 102 depth-3 positions (`hib isocost`; `iso-jobs.txt`, `isocost.txt`, `stats-iso.txt`, Section 7.3) |
 | `tools/` | data conversion and checks, wasm build, book export, analysis scripts |
 | `test/` | Node tests (JS reference engine, wasm engine, opening book, analysis) and match scripts |
