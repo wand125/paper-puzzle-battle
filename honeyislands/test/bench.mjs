@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { loadSolutions, filterBlack, legalMoves, Solver } from '../play/engine.js';
-const buf = readFileSync(new URL('../play/data/solutions.bin', import.meta.url));
+import { loadSolutions, filterBlack, legalMoves, Solver } from '../analyze/engine.js';
+const buf = readFileSync(new URL('../analyze/data/solutions.bin', import.meta.url));
 let S = loadSolutions(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
 console.log('all', S.n, 'moves', legalMoves(S).length);
 let t = performance.now(); filterBlack(S, 30); console.log('filter ms', (performance.now() - t).toFixed(1));

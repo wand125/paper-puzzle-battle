@@ -1,7 +1,7 @@
 import sys, time, collections
 sys.path.insert(0, __import__('os').path.dirname(__file__))
 import count_positions as cp
-sols = cp.load('play/data/solutions.bin'); T = int(sys.argv[1])
+sols = cp.load('analyze/data/solutions.bin'); T = int(sys.argv[1])
 t = time.time(); cnt = collections.Counter(); stack = [(cp.closure(sols), sols, 0)]
 while stack:
     A, S, y = stack.pop()

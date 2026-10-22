@@ -1,14 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { WasmEngine } from '../play/hib-wasm.js';
-import { loadSolutions, filterBlack, Solver } from '../play/engine.js';
+import { WasmEngine } from '../analyze/hib-wasm.js';
+import { loadSolutions, filterBlack, Solver } from '../analyze/engine.js';
 
 const read = p => readFileSync(new URL(p, import.meta.url));
-const data = read('../play/data/solutions.bin');
-const E = await WasmEngine.create(read('../play/wasm/hib_engine.wasm'), data, 1);
-const nNormal = E.loadBook(read('../play/data/book-normal.bin'), 'normal');
-const nPass = E.loadBook(read('../play/data/book-pass.bin'), 'pass');
+const data = read('../analyze/data/solutions.bin');
+const E = await WasmEngine.create(read('../analyze/wasm/hib_engine.wasm'), data, 1);
+const nNormal = E.loadBook(read('../analyze/data/book-normal.bin'), 'normal');
+const nPass = E.loadBook(read('../analyze/data/book-pass.bin'), 'pass');
 const ALL = loadSolutions(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
 // dashboard boards: move1[c].v = value of the position after first move c for the player to move
 const move1 = rule => JSON.parse(read(`../results/${rule}/first-moves.json`)).move1;

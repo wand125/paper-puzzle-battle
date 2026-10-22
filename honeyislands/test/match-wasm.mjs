@@ -1,10 +1,10 @@
 // node test/match-wasm.mjs <games> <ms> [offset] : new wasm AI vs previous JS AI
 import { readFileSync } from 'node:fs';
-import { WasmEngine } from '../play/hib-wasm.js';
-import { loadSolutions, filterBlack, chooseMove } from '../play/engine.js';
+import { WasmEngine } from '../analyze/hib-wasm.js';
+import { loadSolutions, filterBlack, chooseMove } from '../analyze/engine.js';
 const [games = 10, ms = 1000, offset = 0] = process.argv.slice(2).map(Number);
-const data = readFileSync(new URL('../play/data/solutions.bin', import.meta.url));
-const wasm = readFileSync(new URL('../play/wasm/hib_engine.wasm', import.meta.url));
+const data = readFileSync(new URL('../analyze/data/solutions.bin', import.meta.url));
+const wasm = readFileSync(new URL('../analyze/wasm/hib_engine.wasm', import.meta.url));
 const ALL = loadSolutions(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
 let wins = 0;
 for (let g = 0; g < games; ++g) {

@@ -1,9 +1,9 @@
 // node test/match.mjs <games> <ms> [exactLimit] [solverNodes] [c]
 // MCTS vs the old flat Monte Carlo AI, alternating the first player.
 import { readFileSync } from 'node:fs';
-import { loadSolutions, Universe, MCTS, chooseMove } from '../play/engine.js';
+import { loadSolutions, Universe, MCTS, chooseMove } from '../analyze/engine.js';
 const [games = 10, ms = 1000, exactLimit = 3000, solverNodes = 2000, c = 0.8, maxDepth = 64, smart = 1, proofShare = 0.5, proofLimit = 6000, offset = 0] = process.argv.slice(2).map(Number);
-const buf = readFileSync(new URL('../play/data/solutions.bin', import.meta.url));
+const buf = readFileSync(new URL('../analyze/data/solutions.bin', import.meta.url));
 const ALL = loadSolutions(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
 const U = new Universe(ALL);
 let mctsWins = 0;

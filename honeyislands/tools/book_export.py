@@ -1,6 +1,6 @@
-"""Export the opening book for the AI (play/data/book-<rule>.bin).
+"""Export the opening book for the AI (analyze/data/book-<rule>.bin).
 
-Usage: python3 tools/book_export.py results/book play/data/book-normal.bin [max_pop]
+Usage: python3 tools/book_export.py results/book analyze/data/book-normal.bin [max_pop]
 Records of 10 bytes: u64 LE key (canonical determined-black mask), i8 passes
 left (0 for the normal rule), u8 value (1 = the player to move wins).
 Contents: every position up to depth 3 (values backed up from the solved

@@ -5,7 +5,7 @@ Two players alternately place black stones on the 61-cell Honey Islands board. E
 - **Standard rule** (stones only on undetermined cells): the first player wins; 42 of the 61 first moves win.
 - **Redundant-hint rule** (stones may also go on cells already determined black, without shrinking the solution set): the first player wins with every first move.
 
-Paper: [paper/](paper/) (English / 日本語). Game and analysis tool: [play/](play/).
+Game: [index.html](index.html). Paper: [paper/](paper/) (English / 日本語). Analysis tool: [analyze/](analyze/).
 
 The puzzle and its solution set come from the author's Honey Islands real-time solver (ハニーアイランドリアルタイムソルバ).
 
@@ -13,8 +13,10 @@ The puzzle and its solution set come from the author's Honey Islands real-time s
 
 | Path | Contents |
 |---|---|
-| `paper/` | the paper (`index.html`, `paper.css`, `paper.js`, `explorer.js`); `index.html` at the top redirects there |
-| `play/` | game and analysis tool (WebAssembly engine in a Web Worker, solution data, opening books) |
+| `index.html`, `game.js`, `game.css` | the game (uses the engine and data in `analyze/`) |
+| `sitebar.js`, `sitebar.css` | the thin bar linking the game, the analysis tool and the paper |
+| `paper/` | the paper (`index.html`, `paper.css`, `paper.js`, `explorer.js`) |
+| `analyze/` | analysis tool (WebAssembly engine in a Web Worker, solution data, opening books); `play/` redirects here |
 | `rust/` | engine: solver, AI, opening-book tools (`hib`), game-length search (`src/dist.rs`), wasm interface |
 | `verify/` | independent checker `hibverify`, written from the rules alone (std only, no symmetry, no shared tables) |
 | `results/normal`, `results/pass` | positions up to depth 3, edges, depth-3 results, winning depth-4 replies, first-move values, verifier outputs |
@@ -53,7 +55,7 @@ python3 tools/analysis/verify_compare.py results/pass /tmp/res-pass.txt
 verify/target/release/hibverify solve normal results/normal/verify-proofset-jobs.txt /tmp/res-normal.txt <threads>
 
 # rebuild the opening books used by the AI
-python3 tools/book_export.py results/normal play/data/book-normal.bin 5   # needs the full known-position file, see below
+python3 tools/book_export.py results/normal analyze/data/book-normal.bin 5   # needs the full known-position file, see below
 ```
 
-The opening books in `play/data/` also contain about 290,000 positions with at most five determined-black cells. These come from the positions shared between machines during the solve. The full shared file (3.5 million positions, 58 MB) is not included, so `book_export.py` can rebuild only the depth-0–4 part from this repository.
+The opening books in `analyze/data/` also contain about 290,000 positions with at most five determined-black cells. These come from the positions shared between machines during the solve. The full shared file (3.5 million positions, 58 MB) is not included, so `book_export.py` can rebuild only the depth-0–4 part from this repository.

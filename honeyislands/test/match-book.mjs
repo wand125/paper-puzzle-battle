@@ -1,12 +1,12 @@
 // Book AI vs the same AI without the book. usage: node test/match-book.mjs <rule> <games> <ms>
 import { readFileSync } from 'node:fs';
-import { WasmEngine } from '../play/hib-wasm.js';
+import { WasmEngine } from '../analyze/hib-wasm.js';
 
 const [rule = 'normal', games = 8, ms = 1000] = process.argv.slice(2);
 const read = p => readFileSync(new URL(p, import.meta.url));
-const wasm = read('../play/wasm/hib_engine.wasm'), data = read('../play/data/solutions.bin');
+const wasm = read('../analyze/wasm/hib_engine.wasm'), data = read('../analyze/data/solutions.bin');
 const B = await WasmEngine.create(wasm, data, 1);
-B.loadBook(read(`../play/data/book-${rule}.bin`), rule);
+B.loadBook(read(`../analyze/data/book-${rule}.bin`), rule);
 const P = await WasmEngine.create(wasm, data, 2);
 const score = { first: [0, 0], second: [0, 0] };
 for (let g = 0; g < +games; ++g) {

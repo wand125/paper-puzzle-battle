@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { loadSolutions, Universe, MCTS } from '../play/engine.js';
-const buf = readFileSync(new URL('../play/data/solutions.bin', import.meta.url));
+import { loadSolutions, Universe, MCTS } from '../analyze/engine.js';
+const buf = readFileSync(new URL('../analyze/data/solutions.bin', import.meta.url));
 let t = performance.now();
 const U = new Universe(loadSolutions(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)));
 console.log('universe ms', (performance.now() - t).toFixed(0));

@@ -7,6 +7,6 @@ In each game the players narrow down the solutions of a puzzle; the player who l
 
 | Puzzle | Result | Paper | Play |
 |---|---|---|---|
-| [Honey Islands](honeyislands/) | First player wins (standard rule: 42 of 61 first moves; redundant-hint rule: all 61) | [paper](https://wand125.github.io/paper-puzzle-battle/honeyislands/) | [play](https://wand125.github.io/paper-puzzle-battle/honeyislands/play/) |
+| [Honey Islands](honeyislands/) | First player wins (standard rule: 42 of 61 first moves; redundant-hint rule: all 61) | [paper](https://wand125.github.io/paper-puzzle-battle/honeyislands/paper/) | [play](https://wand125.github.io/paper-puzzle-battle/honeyislands/) · [analyze](https://wand125.github.io/paper-puzzle-battle/honeyislands/analyze/) |
 
 License: MIT.

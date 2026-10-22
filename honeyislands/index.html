@@ -1,12 +1,114 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Honey Islands Battle is Solved</title>
-<link rel="canonical" href="paper/">
-<link rel="icon" href="data:,">
-<script>location.replace("paper/" + location.search + location.hash)</script>
-<meta http-equiv="refresh" content="0; url=paper/">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Honey Islands Battle</title>
+  <meta name="description" content="Narrow down 1,304,983 puzzle solutions. Play Honey Islands Battle against AI or a friend.">
+  <link rel="icon" href="data:,">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('hib-paper-theme')==='dark'?'dark':'light'}catch{document.documentElement.dataset.theme='light'}</script>
+  <link rel="stylesheet" href="game.css">
+  <link rel="stylesheet" href="sitebar.css">
+  <script type="module" src="game.js"></script>
 </head>
-<body><p><a href="paper/">Honey Islands Battle is Solved</a></p></body>
+<body>
+  <nav class="sitebar" data-current="game" data-base="./"></nav>
+  <div class="page">
+    <header class="header">
+      <div class="preferences">
+        <div class="small-toggle" id="language-toggle" role="group" aria-label="Language">
+          <button type="button" data-language="ja" lang="ja" aria-pressed="false">JA</button><span aria-hidden="true">|</span><button type="button" data-language="en" lang="en" aria-pressed="true">EN</button>
+        </div>
+        <div class="small-toggle" id="theme-toggle" role="group" aria-label="Theme">
+          <button type="button" data-theme-set="light" data-i18n="light">Light</button><span aria-hidden="true">|</span><button type="button" data-theme-set="dark" data-i18n="dark">Dark</button>
+        </div>
+      </div>
+      <h1 data-i18n="title">Honey Islands Battle</h1>
+    </header>
+
+    <main>
+      <section id="setup" class="panel" aria-labelledby="setup-title">
+        <h2 id="setup-title" data-i18n="setupTitle">Choose your game</h2>
+        <form id="setup-form">
+          <label class="field" for="opponent"><span data-i18n="opponent">Opponent</span>
+            <select id="opponent" name="opponent">
+              <option value="ai2" data-i18n="humanFirst">You first · vs AI</option>
+              <option value="ai1" data-i18n="aiFirst">AI first · vs you</option>
+              <option value="pvp" data-i18n="twoPlayers">Two players</option>
+            </select>
+          </label>
+          <label class="field" for="strength"><span data-i18n="strength">AI strength</span>
+            <select id="strength" name="strength" aria-describedby="strength-note">
+              <option value="1" data-i18n="easy">Easy</option>
+              <option value="2" data-i18n="normal">Normal</option>
+              <option value="3" data-i18n="strong">Strong</option>
+              <option value="4" data-i18n="strongest">Strongest</option>
+            </select>
+          </label>
+          <p id="strength-note" class="field-note"></p>
+          <fieldset class="rules">
+            <legend data-i18n="rule">Rule</legend>
+            <label class="rule-choice">
+              <input type="radio" name="rule" value="normal" checked>
+              <span><strong data-i18n="standardRule">Standard</strong><small data-i18n="standardNote">Place stones only on undetermined cells.</small></span>
+            </label>
+            <label class="rule-choice">
+              <input type="radio" name="rule" value="pass">
+              <span><strong data-i18n="passRule">Redundant hints</strong><small data-i18n="passNote">Also place on empty determined-black cells to pass the turn.</small></span>
+            </label>
+          </fieldset>
+          <button class="primary start" type="submit" id="start" disabled data-i18n="start">Start game</button>
+        </form>
+      </section>
+
+      <section class="game" aria-label="Game" id="game">
+        <div class="scoreboard">
+          <p class="game-label" id="game-label"></p>
+          <p class="counter" id="counter"><span id="count-before"></span><strong id="count">—</strong><span id="count-after"></span></p>
+          <div class="progress" id="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-fill"></span></div>
+          <p id="count-announcement" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+          <p id="preview" class="preview"></p>
+          <p id="status" class="status" role="status" aria-live="polite">Loading solution data…</p>
+          <p id="passes" class="passes" hidden></p>
+          <p id="error" class="error" role="alert" hidden></p>
+        </div>
+
+        <svg id="board" viewBox="0 4 100 92" role="group" aria-label="Hexagonal game board" aria-describedby="board-help"></svg>
+        <p class="sr-only" id="board-help" data-i18n="boardHelp">Tab to a playable cell, then press Enter or Space to place a stone. Arrow keys move between playable cells.</p>
+        <div class="legend" aria-label="Cell types" id="legend">
+          <span><i class="swatch undetermined"></i><span data-i18n="undetermined">Undetermined</span></span>
+          <span><i class="swatch black"></i><span data-i18n="determinedBlack">Determined black</span></span>
+          <span><i class="swatch white"></i><span data-i18n="determinedWhite">Determined white</span></span>
+        </div>
+        <div class="game-actions" id="game-actions" hidden>
+          <button type="button" id="undo" data-i18n="undo" disabled>Undo</button>
+          <button type="button" id="new-game" data-i18n="newGame">New game</button>
+        </div>
+      </section>
+
+      <details class="how-to">
+        <summary data-i18n="howTo">How to play</summary>
+        <ul>
+          <li data-i18n="how1">The 61-cell board has 1,304,983 puzzle solutions, each with 25 black cells.</li>
+          <li data-i18n="how2">Take turns placing a black stone on an undetermined cell. Only solutions with that cell black remain.</li>
+          <li data-i18n="how3">The player whose stone leaves exactly one solution wins.</li>
+          <li data-i18n="how4">With redundant hints, an empty determined-black cell also accepts a stone and passes the turn. Determined-white cells are never playable.</li>
+        </ul>
+      </details>
+    </main>
+  </div>
+
+  <dialog id="result" aria-labelledby="result-title" aria-describedby="result-moves">
+    <button type="button" id="close-result" class="close-result" aria-label="Close">×</button>
+    <p class="result-mark" aria-hidden="true">✓</p>
+    <h2 id="result-title"></h2>
+    <p id="result-moves"></p>
+    <div class="result-actions">
+      <button type="button" id="play-again" class="primary" data-i18n="playAgain">Play again</button>
+      <button type="button" id="swap" data-i18n="swapSides">Swap sides</button>
+      <button type="button" id="change-settings" data-i18n="changeSettings">Change settings</button>
+    </div>
+  </dialog>
+  <noscript><p class="noscript">このゲームには JavaScript が必要です。 / JavaScript is required to play.</p></noscript>
+</body>
 </html>

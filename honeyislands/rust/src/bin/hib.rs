@@ -3,7 +3,7 @@
 use hib_engine::*;
 
 fn load() -> Universe {
-    let path = std::env::var("HIB_DATA").unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../play/data/solutions.bin").to_string());
+    let path = std::env::var("HIB_DATA").unwrap_or_else(|_| concat!(env!("CARGO_MANIFEST_DIR"), "/../analyze/data/solutions.bin").to_string());
     Universe::from_le_bytes(&std::fs::read(path).expect("solutions.bin"))
 }
 
@@ -173,6 +173,41 @@ fn main() {
                 ply += 1;
             }
             println!("line {} plies {}", st.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(","), st.len());
+        }
+        Some("playauc") => {
+            // hib playauc <depth3-results.txt> <playouts> [seed] : random playouts from every
+            // depth-3 position (RULE=pass for the redundant-hint rule), with every option equally
+            // likely as in `gamesize` (each redundant-hint cell is one option).
+            // Rows: "key value wins playouts" (value 1 = the player to move wins; wins = playouts
+            // won by the player to move).
+            let pass = std::env::var("RULE").is_ok_and(|r| r == "pass");
+            let k: usize = args[3].parse().unwrap();
+            let mut rng = Rng::new(args.get(4).map(|s| s.parse().unwrap()).unwrap_or(1));
+            fn dm(v: &[u64]) -> u64 { v.iter().fold(!0u64, |a, &x| a & x) & ((1u64 << N) - 1) }
+            let mut seen = std::collections::HashSet::new();
+            for l in std::fs::read_to_string(&args[2]).unwrap().lines() {
+                let f: Vec<&str> = l.split(' ').collect();
+                if !seen.insert(f[0].to_string()) { continue; }
+                let stones: Vec<u8> = f[6].split(',').map(|x| x.parse().unwrap()).collect();
+                let mut start = u.to_list(&u.root());
+                for &c in &stones { start.retain(|x| (x >> c) & 1 == 1); }
+                let mut wins = 0;
+                for _ in 0..k {
+                    let mut list = start.clone();
+                    let mut placed = stones.len() as i32;
+                    let mut ply = 0;
+                    while list.len() > 1 {
+                        let lg = legal(&list_counts(&list), list.len());
+                        let p = if pass { dm(&list).count_ones() as i32 - placed } else { 0 };
+                        let c = rng.below(lg.len() + p.max(0) as usize);
+                        if c < lg.len() { let c = lg[c]; list.retain(|x| (x >> c) & 1 == 1); }
+                        placed += 1;
+                        ply += 1;
+                    }
+                    wins += ply % 2;
+                }
+                println!("{} {} {wins} {k}", f[0], f[1]);
+            }
         }
         Some("gamesize") => {
             // hib gamesize <games> [seed]: random games (every option equally likely, a pass

@@ -1,4 +1,4 @@
-"""Summarize the opening-book solve into play/book/status.json.
+"""Summarize the opening-book solve into analyze/book/status.json.
 
 Inputs (results/book/): jobs-<host>.txt (assigned depth-3 positions),
 res-<host>.txt (solved: key value move n ms nodes stones), edges.txt
@@ -8,7 +8,7 @@ Values are for the player to move: 1 = wins, 0 = loses.
 import glob, json, os, statistics, sys, time
 
 base = sys.argv[1] if len(sys.argv) > 1 else 'results/book'
-out = sys.argv[2] if len(sys.argv) > 2 else 'play/book/status.json'
+out = sys.argv[2] if len(sys.argv) > 2 else 'analyze/book/status.json'
 now = time.time()
 # root key: "0" for the normal rule, "0:0" for the pass rule (keys "mask:passes")
 ROOT = '0:0' if os.path.exists(f'{base}/positions.txt') and ':' in open(f'{base}/positions.txt').readline().split()[1] else '0'

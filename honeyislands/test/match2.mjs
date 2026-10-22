@@ -1,8 +1,8 @@
 // node test/match2.mjs <A> <B> <games> <ms> : players = mcts | flat | random
 import { readFileSync } from 'node:fs';
-import { loadSolutions, Universe, MCTS, chooseMove, legalMoves } from '../play/engine.js';
+import { loadSolutions, Universe, MCTS, chooseMove, legalMoves } from '../analyze/engine.js';
 const [A, B, games = 10, ms = 1000] = process.argv.slice(2);
-const buf = readFileSync(new URL('../play/data/solutions.bin', import.meta.url));
+const buf = readFileSync(new URL('../analyze/data/solutions.bin', import.meta.url));
 const U = new Universe(loadSolutions(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)));
 const mk = (kind, g) => {
   if (kind === 'mcts') { const m = new MCTS(U, { seed: 1000 + g }); return (st, S) => m.search(st, +ms, S); }

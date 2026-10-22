@@ -8,10 +8,12 @@
 <link rel="icon" href="data:,">
 <script>try{if(localStorage.getItem("hib-paper-theme")==="dark")document.documentElement.dataset.theme="dark"}catch{}</script>
 <link rel="stylesheet" href="paper.css">
+<link rel="stylesheet" href="../sitebar.css">
 <script type="module" src="paper.js"></script>
 <script type="module" src="explorer.js"></script>
 </head>
 <body>
+<nav class="sitebar" data-current="paper" data-base="../"></nav>
 <main>
 <div class="languages"><span><button type="button" data-language="en">EN</button> | <button type="button" data-language="ja">日本語</button></span><span><button type="button" data-theme-set="light">Light</button> | <button type="button" data-theme-set="dark">Dark</button></span></div>
 
@@ -21,7 +23,7 @@
 <p class="overline">COMPUTATIONAL GAME STUDY · 2026-10-22</p>
 <h1>Honey Islands Battle is Solved</h1>
 <p class="lead">A two-player game in which the players narrow down the 1,304,983 solutions of a logic puzzle. The first player wins, both under the standard rule and under the redundant-hint rule.</p>
-<p class="links"><a href="../play/">Play and analyze</a> · <a href="https://github.com/wand125/paper-puzzle-battle/tree/main/honeyislands">Source and data</a></p>
+<p class="links"><a href="../">Play</a> · <a href="../analyze/">Analysis tool</a> · <a href="https://github.com/wand125/paper-puzzle-battle/tree/main/honeyislands">Source and data</a></p>
 </header>
 
 <nav aria-label="Contents"><a href="#abstract">Abstract</a><a href="#intro">1 Introduction</a><a href="#rules">2 Rules</a><a href="#state">3 Positions</a><a href="#method">4 Method</a><a href="#results">5 Results</a><a href="#verify">6 Verification</a><a href="#pass">7 Comparing the rules</a><a href="#ai">8 AI and book</a><a href="#related">9 Related work</a><a href="#repro">Reproducibility</a><a href="#refs">References</a></nav>
@@ -258,7 +260,7 @@ python3 tools/analysis/verify_compare.py results/pass /tmp/res.txt
 # Sections 5.2, 5.3 and 7 (arguments are described at the top of each script)
 python3 tools/analysis/count_positions.py estimate
 python3 tools/analysis/exact_shallow.py
-rust/target/release/hib ppgames &lt;known&gt; play/data/book-normal.bin 10 &lt;seed&gt;
+rust/target/release/hib ppgames &lt;known&gt; analyze/data/book-normal.bin 10 &lt;seed&gt;
 rust/target/release/hib isocost results/pp/iso-jobs.txt
 python3 tools/analysis/pp_stats.py results/pp/normal.txt results/pp/pass.txt
 python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.txt</code></pre>
@@ -292,7 +294,7 @@ python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.t
 <p class="overline">計算ゲーム研究 · 2026-10-22</p>
 <h1>ハニーアイランド・バトルを解く</h1>
 <p class="lead">論理パズルの 1,304,983 通りの解を 2 人で絞り込んでいく対戦ゲーム。標準ルールでも、余剰ヒントを認めるルールでも、先手が勝つ。</p>
-<p class="links"><a href="../play/">対戦・解析ツール</a> · <a href="https://github.com/wand125/paper-puzzle-battle/tree/main/honeyislands">ソースとデータ</a></p>
+<p class="links"><a href="../">対戦</a> · <a href="../analyze/">解析ツール</a> · <a href="https://github.com/wand125/paper-puzzle-battle/tree/main/honeyislands">ソースとデータ</a></p>
 </header>
 
 <nav aria-label="目次"><a href="#ja-abstract">要旨</a><a href="#ja-intro">1 導入</a><a href="#ja-rules">2 ルール</a><a href="#ja-state">3 局面</a><a href="#ja-method">4 方法</a><a href="#ja-results">5 結果</a><a href="#ja-verify">6 検証</a><a href="#ja-pass">7 ルールの比較</a><a href="#ja-ai">8 AI と定石</a><a href="#ja-related">9 関連研究</a><a href="#ja-repro">再現方法</a><a href="#ja-refs">参考文献</a></nav>
@@ -529,7 +531,7 @@ python3 tools/analysis/verify_compare.py results/pass /tmp/res.txt
 # 5.2・5.3・7 節（引数は各スクリプトの冒頭を参照）
 python3 tools/analysis/count_positions.py estimate
 python3 tools/analysis/exact_shallow.py
-rust/target/release/hib ppgames &lt;known&gt; play/data/book-normal.bin 10 &lt;seed&gt;
+rust/target/release/hib ppgames &lt;known&gt; analyze/data/book-normal.bin 10 &lt;seed&gt;
 rust/target/release/hib isocost results/pp/iso-jobs.txt
 python3 tools/analysis/pp_stats.py results/pp/normal.txt results/pp/pass.txt
 python3 tools/analysis/iso_stats.py results/pp/iso-jobs.txt results/pp/isocost.txt</code></pre>

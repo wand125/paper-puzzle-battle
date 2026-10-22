@@ -32,7 +32,7 @@ fn load_solutions() -> Result<Vec<u64>> {
     // HIBV_DATA overrides the location (for copies of the binary on other machines).
     let path = match std::env::var_os("HIBV_DATA") {
         Some(p) => std::path::PathBuf::from(p),
-        None => Path::new(env!("CARGO_MANIFEST_DIR")).join("../play/data/solutions.bin"),
+        None => Path::new(env!("CARGO_MANIFEST_DIR")).join("../analyze/data/solutions.bin"),
     };
     let bytes = fs::read(path)?;
     if bytes.len() != RECORDS * 8 {

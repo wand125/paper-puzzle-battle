@@ -1,3 +1,4 @@
+import { renderSitebar } from '../sitebar.js';
 // Language switch (EN default; ?lang=ja|en and a saved choice) and the first-move maps.
 const KEY = 'hib-paper-language';
 function pick() {
@@ -11,6 +12,7 @@ function apply(lang) {
   for (const a of document.querySelectorAll('article[data-lang]')) a.hidden = a.dataset.lang !== lang;
   for (const b of document.querySelectorAll('[data-language]')) b.setAttribute('aria-pressed', String(b.dataset.language === lang));
   document.title = lang === 'ja' ? 'ハニーアイランド・バトルを解く' : 'Honey Islands Battle is Solved';
+  renderSitebar(lang);
 }
 let lang = pick();
 apply(lang);

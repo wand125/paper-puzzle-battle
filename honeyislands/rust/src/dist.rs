@@ -379,7 +379,7 @@ mod tests {
 
     #[test]
     fn length_matches_plain_minimax() {
-        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../play/data/solutions.bin");
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../analyze/data/solutions.bin");
         let u = Universe::from_le_bytes(&std::fs::read(path).unwrap());
         let mut rng = Rng::new(5);
         let mut checked = [0, 0];

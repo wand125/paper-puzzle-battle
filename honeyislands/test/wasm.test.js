@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { WasmEngine } from '../play/hib-wasm.js';
-import { loadSolutions, filterBlack, blackCounts, legalMoves, Solver } from '../play/engine.js';
+import { WasmEngine } from '../analyze/hib-wasm.js';
+import { loadSolutions, filterBlack, blackCounts, legalMoves, Solver } from '../analyze/engine.js';
 
-const wasm = readFileSync(new URL('../play/wasm/hib_engine.wasm', import.meta.url));
-const data = readFileSync(new URL('../play/data/solutions.bin', import.meta.url));
+const wasm = readFileSync(new URL('../analyze/wasm/hib_engine.wasm', import.meta.url));
+const data = readFileSync(new URL('../analyze/data/solutions.bin', import.meta.url));
 const E = await WasmEngine.create(wasm, data, 1);
 const ALL = loadSolutions(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength));
 

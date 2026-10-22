@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { loadSolutions, filterBlack, legalMoves, cellState, masks, chooseMove, Solver, N } from '../play/engine.js';
+import { loadSolutions, filterBlack, legalMoves, cellState, masks, chooseMove, Solver, N } from '../analyze/engine.js';
 
-const buf = readFileSync(new URL('../play/data/solutions.bin', import.meta.url));
+const buf = readFileSync(new URL('../analyze/data/solutions.bin', import.meta.url));
 const ALL = loadSolutions(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength));
 
 test('all solutions loaded, every cell free at the start', () => {

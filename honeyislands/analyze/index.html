@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ハニーアイランド・バトル</title>
+  <meta name="description" content="ハニーアイランド・バトルの対戦と解析（定石と読み切り）">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../sitebar.css">
+  <script type="module" src="../sitebar.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <nav class="sitebar" data-current="analyze" data-base="../"></nav>
+  <main>
+    <h1>ハニーアイランド・バトル</h1>
+    <p id="status" aria-live="polite">解データを読み込み中…</p>
+    <svg id="board" viewBox="0 0 100 100" role="grid" aria-label="盤面"></svg>
+    <p id="count"></p>
+
+    <div class="row">
+      <button id="new">新規</button>
+      <button id="undo">戻す</button>
+    </div>
+
+    <fieldset>
+      <legend>設定</legend>
+      <div class="field"><span>対戦</span>
+        <div id="mode" class="toggle" role="group" aria-label="対戦">
+          <button type="button" data-value="ai2">あなた（先手） vs AI</button>
+          <button type="button" data-value="ai1">AI（先手） vs あなた</button>
+          <button type="button" data-value="pvp">2 人対戦</button>
+          <button type="button" data-value="aiai">AI vs AI</button>
+        </div>
+      </div>
+      <div class="field"><span>ルール</span>
+        <div id="rule" class="toggle" role="group" aria-label="ルール">
+          <button type="button" data-value="normal">標準（確定したマスには置けない）</button>
+          <button type="button" data-value="pass">黒に確定したマスにも置ける（余剰ヒントあり）</button>
+        </div>
+      </div>
+      <label>AI の持ち時間（秒）
+        <input id="ai-time" type="number" min="0.1" max="600" step="0.1" value="2" inputmode="decimal">
+      </label>
+      <label><input id="hint" type="checkbox"> 各マスの黒率を表示</label>
+      <label><input id="analyze" type="checkbox"> 解析：各マスの勝ち負けを表示</label>
+    </fieldset>
+
+    <section>
+      <h2>ルール</h2>
+      <ul>
+        <li>盤は 61 マスの六角形。ハニーアイランドの解（黒 25 マスで、白マスを 6 マスの島 6 つに分ける塗り方）は全部で 1,304,983 通りあります。</li>
+        <li>2 人が交互に、マスに黒石を 1 つ置きます。置いた石は「黒マス」として、残っている解を絞り込みます。</li>
+        <li>黒か白が確定したマス（残りのすべての解で同じ色のマス）には置けません（標準ルール）。</li>
+        <li>解が 1 つに決まったら、その石を置いた人の勝ちです。相手は置ける場所がなくなり負けになります。</li>
+        <li>「余剰ヒントあり」ルールでは、黒に確定したマスにも置けます。余剰ヒントを置いても解は変わらず、手番が相手に移ります。使えるのは「黒に確定したマスの数 − 置いた石の数」回までです。白に確定したマスには置けません（置くと解がなくなるため）。</li>
+      </ul>
+      <p class="legend">解析の表示：<span class="sw mwin"></span>勝ち（置くと相手が負け） <span class="sw mlose"></span>負け。定石を引き、無ければ AI の持ち時間の範囲で読み切ります。「？」は読み切れなかったマスです。文字の下の小さな「定」は定石から、「読」はその場で読み切った結果です。</p>
+      <p class="legend"><span class="sw stone"></span>置いた石 <span class="sw fb"></span>黒に確定 <span class="sw fw"></span>白に確定 <span class="sw free"></span>置ける</p>
+    </section>
+  </main>
+</body>
+</html>
