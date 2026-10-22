@@ -62,14 +62,14 @@ p { margin: 6px 0; }
 #board g:focus { outline: none; }
 #board text { text-anchor: middle; dominant-baseline: central; pointer-events: none; fill: #33261a; font-size: 2.5px; font-weight: 650; paint-order: stroke; stroke: #fff; stroke-width: .5px; stroke-linejoin: round; }
 #board .num { stroke: none; }
-#board .move-value { font-size: 3.3px; font-weight: 800; }
+#board .move-value { font-size: 4.2px; font-weight: 800; stroke-width: .6px; }
 /* board cells stay light in both themes, so their labels use the light-theme colors */
 #board .win { fill: #b85400; }
 #board .loss { fill: #3d5f8f; }
 td.win { color: var(--win); font-weight: 700; }
 td.loss { color: var(--loss); }
 #board .num { fill: var(--on-stone); }
-#board .source { font-size: 1.45px; font-weight: 600; stroke-width: .35px; }
+#board .source { font-size: 1.9px; font-weight: 700; stroke-width: .45px; }
 #board .after { font-size: 1.8px; font-weight: 500; }
 #board .determined-dot { fill: var(--accent); pointer-events: none; }
 #board .solution-outline { fill: none; stroke: var(--outline); stroke-width: .65; stroke-dasharray: 1.1 .6; pointer-events: none; }

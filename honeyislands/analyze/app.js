@@ -48,8 +48,8 @@ const strings = {
   ja: {
     title: 'ハニーアイランド・バトル · 解析', language: '言語', theme: 'テーマ', light: 'ライト', dark: 'ダーク',
     position: '盤面', new: '新しい局面', showEval: '各手の勝ち負け', heat: 'ヒートマップ',
-    showAfter: '着手後の解数', stone: '置いた石', black: '黒確定', white: '白確定', undetermined: '未確定', win: '勝ち', loss: '負け', winShort: '勝', lossShort: '負', bookMark: '定跡', solvedMark: '読切', closePanel: 'パネルを閉じる', unknown: '不明',
-    overlayLegend: '黄色＝勝つ手、破線の縁＝負ける手、?＝未証明。「定跡」＝定跡で判定、「読切」＝探索で読み切り。濃い黄色ほど黒率が高く、小さい数字は着手後の解数です。茶色の破線は選択した解の黒マスです。',
+    showAfter: '着手後の解数', stone: '置いた石', black: '黒確定', white: '白確定', undetermined: '未確定', win: '勝ち', loss: '負け', winShort: '勝', lossShort: '負', bookMark: '定石', solvedMark: '読切', closePanel: 'パネルを閉じる', unknown: '不明',
+    overlayLegend: '黄色＝勝つ手、破線の縁＝負ける手、?＝未証明。「定石」＝定石で判定、「読切」＝探索で読み切り。濃い黄色ほど黒率が高く、小さい数字は着手後の解数です。茶色の破線は選択した解の黒マスです。',
     display: '表示', tabMoves: '着手', tabDetails: '局面', tabKifu: '棋譜', tabSolutions: '解', tabDisplay: '表示', tabSettings: '設定',
     solutions: '残りの解', clearSolution: '解の輪郭を消す', solutionsLimit: '残りの解が64通り以下になると、解の一覧を表示します。',
     solutionsLoading: '解の一覧を読み込み中…', solutionsShown: '{n} 通り · 選ぶと盤面に黒マスの輪郭を表示します。', solutionLabel: '解 {n}',
@@ -70,7 +70,7 @@ const strings = {
     turn: '{n} 手目 · {side}の番', finished: '解が1通り · {side}の勝ち', count: '残り {n} 通り',
     loading: '解データを読み込み中…', progress: '解データを読み込み中 · {n} MB', calculating: '局面を更新中…', evaluating: '各手を解析中…',
     thinking: 'AIが考え中…', paused: '棋譜の確認中のためAIは停止しています。',
-    positionValue: '手番側の勝敗：{value}', book: '定跡', solved: '持ち時間内に読み切り', unproven: '未証明', terminal: '終局：直前に打った人の勝ちです。',
+    positionValue: '手番側の勝敗：{value}', book: '定石', solved: '持ち時間内に読み切り', unproven: '未証明', terminal: '終局：直前に打った人の勝ちです。',
     evalTime: '解析時間：{n} 秒。', history: '棋譜の移動', firstMove: '初期局面へ', previousMove: '1手戻る', nextMove: '1手進む', lastMove: '最終局面へ',
     board: '六角形の解析盤面', cellLabel: 'マス {n}（{x}, {y}）', selected: '選択：{cell} · 着手後 {n} 通り',
     stopped: '{n} 手目の直前で読込を停止しました。違法なマス、重複、または終局後の着手です。',
@@ -139,8 +139,8 @@ const cellEls = CELLS.map((c, i) => {
   const poly = svgElement('polygon', { points: hexPoints(p) });
   const dot = svgElement('circle', { cx: p.cx, cy: p.cy, r: .65, class: 'determined-dot' });
   const label = svgElement('text', { x: p.cx, y: p.cy });
-  const source = svgElement('text', { x: p.cx, y: p.cy + 1.4 });
-  const after = svgElement('text', { x: p.cx, y: p.cy + 3.1 });
+  const source = svgElement('text', { x: p.cx, y: p.cy + 1.7 });
+  const after = svgElement('text', { x: p.cx, y: p.cy + 3.7 });
   const outline = svgElement('polygon', { points: hexPoints(p, .78), class: 'solution-outline' });
   g.append(poly, dot, label, source, after, outline);
   g.onclick = () => play(i);
@@ -345,7 +345,7 @@ function renderBoard() {
     const cellName = t('cellLabel', { n: c, x: CELLS[c].x, y: CELLS[c].y });
     g.setAttribute('aria-label', placed ? `${cellName}, ${t('stone')} ${order.get(c) + 1}` : `${cellName}, ${t(st === 1 ? 'black' : st === 0 ? 'white' : 'undetermined')}${legal.has(c) ? `, ${valueText(evalRes?.value[c])}, ${number(afterCount(c))}` : ''}`);
     label.setAttribute('class', placed ? 'num' : `move-value ${valueClass(v)}`);
-    label.setAttribute('y', center(CELLS[c]).cy + (placed || v < 0 ? 0 : -1.2));
+    label.setAttribute('y', center(CELLS[c]).cy + (placed || v < 0 ? 0 : -1.5));
     label.textContent = placed ? order.get(c) + 1 : v >= 0 ? valueShort(v) : '';
     source.setAttribute('class', 'source');
     source.textContent = v >= 0 ? sourceMark(evalRes?.source[c]) : '';
