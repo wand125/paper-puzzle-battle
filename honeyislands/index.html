@@ -27,39 +27,6 @@
     </header>
 
     <main>
-      <section id="setup" class="panel" aria-labelledby="setup-title">
-        <h2 id="setup-title" data-i18n="setupTitle">Choose your game</h2>
-        <form id="setup-form">
-          <label class="field" for="opponent"><span data-i18n="opponent">Opponent</span>
-            <select id="opponent" name="opponent">
-              <option value="ai2" data-i18n="humanFirst">You first · vs AI</option>
-              <option value="ai1" data-i18n="aiFirst">AI first · vs you</option>
-              <option value="pvp" data-i18n="twoPlayers">Two players</option>
-            </select>
-          </label>
-          <label class="field" for="strength"><span data-i18n="strength">AI strength</span>
-            <select id="strength" name="strength" aria-describedby="strength-note">
-              <option value="1" data-i18n="easy">Easy</option>
-              <option value="2" data-i18n="normal">Normal</option>
-              <option value="3" data-i18n="strong">Strong</option>
-              <option value="4" data-i18n="strongest">Strongest</option>
-            </select>
-          </label>
-          <p id="strength-note" class="field-note"></p>
-          <fieldset class="rules">
-            <legend data-i18n="rule">Rule</legend>
-            <label class="rule-choice">
-              <input type="radio" name="rule" value="normal" checked>
-              <span><strong data-i18n="standardRule">Standard</strong><small data-i18n="standardNote">Place stones only on undetermined cells.</small></span>
-            </label>
-            <label class="rule-choice">
-              <input type="radio" name="rule" value="pass">
-              <span><strong data-i18n="passRule">Redundant hints</strong><small data-i18n="passNote">Also place on empty determined-black cells to pass the turn.</small></span>
-            </label>
-          </fieldset>
-          <button class="primary start" type="submit" id="start" disabled data-i18n="start">Start game</button>
-        </form>
-      </section>
 
       <section class="game" aria-label="Game" id="game">
         <div class="scoreboard">
@@ -98,6 +65,54 @@
     </main>
   </div>
 
+  <dialog id="setup" class="setup-dialog" aria-labelledby="setup-title">
+    <form id="setup-form">
+      <h2 id="setup-title" data-i18n="setupTitle">Choose your game</h2>
+      <fieldset class="choice">
+        <legend data-i18n="opponent">Opponent</legend>
+        <div class="seg">
+          <label><input type="radio" name="opponent" value="ai2"><span data-i18n="humanFirst">You first · vs AI</span></label>
+          <label><input type="radio" name="opponent" value="ai1"><span data-i18n="aiFirst">AI first · vs you</span></label>
+          <label><input type="radio" name="opponent" value="pvp"><span data-i18n="twoPlayers">Two players</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="choice" id="strength-group">
+        <legend data-i18n="strength">AI strength</legend>
+        <div class="seg">
+          <label><input type="radio" name="strength" value="1"><span data-i18n="easy">Easy</span></label>
+          <label><input type="radio" name="strength" value="2"><span data-i18n="normal">Normal</span></label>
+          <label><input type="radio" name="strength" value="3"><span data-i18n="strong">Strong</span></label>
+          <label><input type="radio" name="strength" value="4"><span data-i18n="strongest">Strongest</span></label>
+        </div>
+        <p id="strength-note" class="field-note"></p>
+      </fieldset>
+      <fieldset class="choice">
+        <legend data-i18n="rule">Rule</legend>
+        <div class="rule-cards">
+          <label class="rule-card">
+            <input type="radio" name="rule" value="normal">
+            <span class="rule-body">
+              <svg class="rule-icon" viewBox="0 0 56 26" aria-hidden="true"><polygon class="ri-cell" points="10,3 18,8 18,18 10,23 2,18 2,8"/><polygon class="ri-stone" points="28,3 36,8 36,18 28,23 20,18 20,8"/><polygon class="ri-cell" points="46,3 54,8 54,18 46,23 38,18 38,8"/></svg>
+              <strong data-i18n="standardRule">Standard</strong>
+              <small data-i18n="standardNote">Place stones only on undetermined cells.</small>
+            </span>
+          </label>
+          <label class="rule-card">
+            <input type="radio" name="rule" value="pass">
+            <span class="rule-body">
+              <svg class="rule-icon" viewBox="0 0 56 26" aria-hidden="true"><polygon class="ri-cell" points="10,3 18,8 18,18 10,23 2,18 2,8"/><polygon class="ri-stone" points="28,3 36,8 36,18 28,23 20,18 20,8"/><polygon class="ri-black" points="46,3 54,8 54,18 46,23 38,18 38,8"/></svg>
+              <strong data-i18n="passRule">Redundant hints</strong>
+              <small data-i18n="passNote">Also place on empty determined-black cells to pass the turn.</small>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+      <div class="setup-actions">
+        <button type="button" id="setup-cancel" data-i18n="cancel">Cancel</button>
+        <button class="primary start" type="submit" id="start" disabled data-i18n="start">Start game</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="result" aria-labelledby="result-title" aria-describedby="result-moves">
     <button type="button" id="close-result" class="close-result" aria-label="Close">×</button>
     <p class="result-mark" aria-hidden="true">✓</p>

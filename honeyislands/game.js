@@ -16,7 +16,7 @@ const strings = {
   en: {
     title: 'Honey Islands Battle', analysisTool: 'Analysis tool', paper: 'Paper',
     language: 'Language', theme: 'Theme', light: 'Light', dark: 'Dark', links: 'Links',
-    setupTitle: 'Choose your game', opponent: 'Opponent', humanFirst: 'You first · vs AI',
+    setupTitle: 'Choose your game', cancel: 'Cancel', opponent: 'Opponent', humanFirst: 'You first · vs AI',
     aiFirst: 'AI first · vs you', twoPlayers: 'Two players', strength: 'AI strength',
     easy: 'Easy', normal: 'Normal', strong: 'Strong', strongest: 'Strongest',
     strength1: 'Random moves, with an eye for immediate wins.',
@@ -31,7 +31,7 @@ const strings = {
     playAgain: 'Play again', swapSides: 'Swap sides', changeSettings: 'Change settings', close: 'Close',
     countBefore: '', countAfter: 'solutions left', remaining: '{n} solutions left',
     preview: '{n} solutions would remain', passes: '{n} redundant hints available',
-    loading: 'Loading solution data (about 10 MB)…', calculating: 'Updating the board…',
+    loadingShort: 'Loading…', loading: 'Loading solution data (about 10 MB)…', calculating: 'Updating the board…',
     setupReady: 'Choose your settings, then start.', errorStatus: 'The game could not load.',
     error: 'Unable to load the game: {message}. Please reload to try again.',
     humanTurn: 'Your turn', aiTurn: 'AI is thinking…', firstTurn: 'First player’s turn', secondTurn: 'Second player’s turn',
@@ -50,7 +50,7 @@ const strings = {
   ja: {
     title: 'ハニーアイランド・バトル', analysisTool: '解析ツール', paper: '論文',
     language: '言語', theme: 'テーマ', light: 'ライト', dark: 'ダーク', links: '関連リンク',
-    setupTitle: '対戦設定', opponent: '対戦相手', humanFirst: 'あなた先手 vs AI',
+    setupTitle: '対戦設定', cancel: 'キャンセル', opponent: '対戦相手', humanFirst: 'あなた先手 vs AI',
     aiFirst: 'AI先手 vs あなた', twoPlayers: '2人対戦', strength: 'AIの強さ',
     easy: 'やさしい', normal: 'ふつう', strong: 'つよい', strongest: 'さいきょう',
     strength1: 'ランダムに打ちますが、すぐに勝てる手は見逃しません。',
@@ -65,7 +65,7 @@ const strings = {
     playAgain: 'もう一度', swapSides: '先後を入れ替える', changeSettings: '設定を変える', close: '閉じる',
     countBefore: '残り', countAfter: '通り', remaining: '残り {n} 通り',
     preview: 'ここに置くと残り {n} 通り', passes: '余剰ヒント あと {n} 回',
-    loading: '解データを読み込み中（約10 MB）…', calculating: '盤面を更新中…',
+    loadingShort: '読み込み中…', loading: '解データを読み込み中（約10 MB）…', calculating: '盤面を更新中…',
     setupReady: '設定を選んで対戦を始めましょう。', errorStatus: 'ゲームを読み込めませんでした。',
     error: 'ゲームを読み込めませんでした: {message}。ページを再読み込みしてください。',
     humanTurn: 'あなたの番', aiTurn: 'AI が考え中…', firstTurn: '先手の番', secondTurn: '後手の番',
@@ -87,14 +87,15 @@ let lang = ['ja', 'en'].includes(urlLanguage) ? urlLanguage : (navigator.languag
 const t = (key, values = {}) => strings[lang][key].replace(/\{(\w+)\}/g, (_, name) => values[name] ?? '');
 const number = n => Math.round(n).toLocaleString(lang === 'ja' ? 'ja-JP' : 'en-US');
 const validated = (value, choices, fallback) => choices.includes(value) ? value : fallback;
-$('opponent').value = validated(store.get('hib-game-opponent', 'ai2'), ['ai2', 'ai1', 'pvp'], 'ai2');
-$('strength').value = validated(store.get('hib-game-strength', '2'), ['1', '2', '3', '4'], '2');
-const savedRule = validated(store.get('hib-game-rule', 'normal'), ['normal', 'pass'], 'normal');
-document.querySelector(`input[name=rule][value=${savedRule}]`).checked = true;
+// setup choices are radio groups shown as toggle buttons and cards
+const choice = name => document.querySelector(`input[name=${name}]:checked`).value;
+const setChoice = (name, value) => { document.querySelector(`input[name=${name}][value="${value}"]`).checked = true; };
+setChoice('opponent', validated(store.get('hib-game-opponent', 'ai2'), ['ai2', 'ai1', 'pvp'], 'ai2'));
+setChoice('strength', validated(store.get('hib-game-strength', '2'), ['1', '2', '3', '4'], '2'));
+setChoice('rule', validated(store.get('hib-game-rule', 'normal'), ['normal', 'pass'], 'normal'));
 
 function setupChoices() {
-  return { mode: $('opponent').value, strength: +$('strength').value,
-    rule: document.querySelector('input[name=rule]:checked').value };
+  return { mode: choice('opponent'), strength: +choice('strength'), rule: choice('rule') };
 }
 function persistChoices() {
   const choices = setupChoices();
@@ -103,9 +104,10 @@ function persistChoices() {
   store.set('hib-game-rule', choices.rule);
 }
 function renderSetup() {
-  const pvp = $('opponent').value === 'pvp';
-  $('strength').disabled = pvp;
-  $('strength-note').textContent = t(pvp ? 'strengthPvp' : `strength${$('strength').value}`);
+  const pvp = choice('opponent') === 'pvp';
+  for (const input of document.querySelectorAll('input[name=strength]')) input.disabled = pvp;
+  $('strength-group').classList.toggle('off', pvp);
+  $('strength-note').textContent = t(pvp ? 'strengthPvp' : `strength${choice('strength')}`);
 }
 function localize() {
   document.documentElement.lang = lang;
@@ -301,19 +303,16 @@ function startGame(next = setupChoices()) {
   resultShown = false;
   restoreBoardFocus = true;
   active = true;
+  if ($('setup').open) $('setup').close();
   refresh();
   $('game').scrollIntoView({ block: 'start' });
 }
+// the setup popup; while a game is on, cancelling it returns to that game
 function showSetup() {
   closeResult();
-  active = false;
-  stones = [];
-  analysis = visualAnalysis = null;
-  animateCell = null;
-  restoreBoardFocus = false;
-  settings = setupChoices();
-  refresh();
-  $('opponent').focus();
+  if (!$('setup').open) $('setup').showModal();
+  render();
+  document.querySelector('input[name=opponent]:checked').focus();
 }
 
 // ---- counter and rendering -------------------------------------------------
@@ -373,9 +372,11 @@ function render() {
     const preview = playable.has(i) ? `. ${t('preview', { n: number(remainingAfter(i)) })}` : '';
     g.setAttribute('aria-label', `${label}: ${description}${preview}`);
   }
-  $('setup').hidden = active;
+  if (!active && !$('setup').open) $('setup').showModal();
+  $('setup-cancel').hidden = !active;
   $('game-actions').hidden = !active;
   $('start').disabled = !ready || !!failure;
+  $('start').textContent = t(ready || failure ? 'start' : 'loadingShort');
   $('undo').disabled = !canUndo();
   $('passes').hidden = !active || settings.rule !== 'pass';
   $('passes').textContent = analysis ? t('passes', { n: passCells().length }) : '';
@@ -454,12 +455,14 @@ $('change-settings').addEventListener('click', showSetup);
 $('play-again').addEventListener('click', () => startGame(settings));
 $('swap').addEventListener('click', () => {
   const mode = settings.mode === 'ai1' ? 'ai2' : 'ai1';
-  $('opponent').value = mode;
+  setChoice('opponent', mode);
   persistChoices();
   renderSetup();
   startGame({ ...settings, mode });
 });
 $('close-result').addEventListener('click', closeResult);
+$('setup-cancel').addEventListener('click', () => $('setup').close());
+$('setup').addEventListener('cancel', event => { if (!active) event.preventDefault(); });
 $('result').addEventListener('close', () => { if (active) $('new-game').focus({ preventScroll: true }); });
 for (const button of document.querySelectorAll('[data-language]')) {
   button.addEventListener('click', () => {
