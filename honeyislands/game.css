@@ -184,3 +184,7 @@ dialog.setup-dialog { width: min(560px, calc(100% - 24px)); text-align: left; pa
 .result-banner .result-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .result-banner .result-actions button { min-height: 40px; padding: 6px 14px; font-size: .9rem; }
 @media (max-width: 480px) { .result-banner .result-actions { width: 100%; } .result-banner .result-actions button { flex: 1 1 auto; } }
+/* non-modal setup popup: the backdrop starts below the site bar, which stays clickable */
+dialog.setup-dialog[open] { position: fixed; inset: 36px 0 0; margin: auto; z-index: 45; max-height: calc(100dvh - 52px); overflow: auto; }
+body:has(dialog.setup-dialog[open])::before { content: ""; position: fixed; inset: 36px 0 0; z-index: 44; background: #0007; }
+body:has(dialog.setup-dialog[open]) { overflow: hidden; }

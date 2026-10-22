@@ -376,7 +376,7 @@ function startGame(next = setupChoices()) {
 // the setup popup; while a game is on, cancelling it returns to that game
 function showSetup() {
   closeResult();
-  if (!$('setup').open) $('setup').showModal();
+  if (!$('setup').open) $('setup').show();
   render();
   document.querySelector('input[name=opponent]:checked').focus();
 }
@@ -445,7 +445,7 @@ function render() {
     const preview = playable.has(i) && settings.showCount && !hidden ? `. ${t('preview', { n: number(remainingAfter(i)) })}` : '';
     g.setAttribute('aria-label', `${label}: ${description}${preview}`);
   }
-  if (!active && !$('setup').open) $('setup').showModal();
+  if (!active && !$('setup').open) $('setup').show();
   $('setup-cancel').hidden = !active;
   $('game-actions').hidden = !active;
   $('start').disabled = !ready || !!failure;
@@ -552,7 +552,10 @@ $('swap').addEventListener('click', () => {
   startGame({ ...settings, mode });
 });
 $('setup-cancel').addEventListener('click', () => $('setup').close());
-$('setup').addEventListener('cancel', event => { if (!active) event.preventDefault(); });
+// the setup popup is non-modal so the site bar stays usable; Escape returns to a running game
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && $('setup').open && active) $('setup').close();
+});
 for (const button of document.querySelectorAll('[data-language]')) {
   button.addEventListener('click', () => {
     lang = button.dataset.language;
