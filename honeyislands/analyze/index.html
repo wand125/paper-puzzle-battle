@@ -1,63 +1,130 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ハニーアイランド・バトル</title>
-  <meta name="description" content="ハニーアイランド・バトルの対戦と解析（定石と読み切り）">
+  <title>Honey Islands · Analysis</title>
+  <meta name="description" content="Explore Honey Islands Battle positions, move values and remaining puzzle solutions.">
+  <link rel="icon" href="data:,">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('hib-paper-theme')==='dark'?'dark':'light'}catch{document.documentElement.dataset.theme='light'}</script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="../sitebar.css">
-  <script type="module" src="../sitebar.js"></script>
   <script type="module" src="app.js"></script>
 </head>
 <body>
   <nav class="sitebar" data-current="analyze" data-base="../"></nav>
-  <main>
-    <h1>ハニーアイランド・バトル</h1>
-    <p id="status" aria-live="polite">解データを読み込み中…</p>
-    <svg id="board" viewBox="0 0 100 100" role="grid" aria-label="盤面"></svg>
-    <p id="count"></p>
-
-    <div class="row">
-      <button id="new">新規</button>
-      <button id="undo">戻す</button>
-    </div>
-
-    <fieldset>
-      <legend>設定</legend>
-      <div class="field"><span>対戦</span>
-        <div id="mode" class="toggle" role="group" aria-label="対戦">
-          <button type="button" data-value="ai2">あなた（先手） vs AI</button>
-          <button type="button" data-value="ai1">AI（先手） vs あなた</button>
-          <button type="button" data-value="pvp">2 人対戦</button>
-          <button type="button" data-value="aiai">AI vs AI</button>
+  <div class="page">
+    <header>
+      <div class="preferences">
+        <div id="language-toggle" class="small-toggle" role="group" aria-label="Language">
+          <button type="button" data-language="ja" lang="ja">JA</button><button type="button" data-language="en" lang="en">EN</button>
+        </div>
+        <div id="theme-toggle" class="small-toggle" role="group" aria-label="Theme">
+          <button type="button" data-theme-set="light" data-i18n="light">Light</button><button type="button" data-theme-set="dark" data-i18n="dark">Dark</button>
         </div>
       </div>
-      <div class="field"><span>ルール</span>
-        <div id="rule" class="toggle" role="group" aria-label="ルール">
-          <button type="button" data-value="normal">標準（確定したマスには置けない）</button>
-          <button type="button" data-value="pass">黒に確定したマスにも置ける（余剰ヒントあり）</button>
-        </div>
+      <h1 data-i18n="title">Honey Islands · Analysis</h1>
+    </header>
+    <main class="workspace">
+      <div class="board-column">
+        <section class="card board-card" aria-labelledby="position-heading">
+          <div class="position-heading"><h2 id="position-heading" data-i18n="position">Position</h2><button type="button" id="new" data-i18n="new">New position</button></div>
+          <p id="status" role="status" aria-live="polite"></p>
+          <p id="count" class="counter">—</p>
+          <p id="notice" role="status" class="muted"></p>
+          <p id="error" role="alert" hidden></p>
+          <svg id="board" viewBox="0 4 100 92" role="group" aria-label="Board"></svg>
+          <p id="selection" class="muted"></p>
+          <div class="navigation" role="group" aria-label="History" id="navigation">
+            <button type="button" id="first">|◀</button><button type="button" id="previous">◀</button>
+            <span id="history-position"></span>
+            <button type="button" id="next">▶</button><button type="button" id="last">▶|</button>
+          </div>
+          <div class="overlays">
+            <label><input id="show-eval" type="checkbox"><span data-i18n="showEval">Win/loss of each move</span></label>
+            <label><input id="show-heat" type="checkbox"><span data-i18n="heat">Heat map</span></label>
+            <label><input id="show-after" type="checkbox"><span data-i18n="showAfter">Solutions left after the move</span></label>
+          </div>
+          <div class="legend">
+            <span><i class="sw stone"></i><span data-i18n="stone">Stone</span></span>
+            <span><i class="sw fb"></i><span data-i18n="black">Determined black</span></span>
+            <span><i class="sw fw"></i><span data-i18n="white">Determined white</span></span>
+            <span><i class="sw mwin"></i><span data-i18n="win">Win</span></span>
+            <span><i class="sw mlose"></i><span data-i18n="loss">Loss</span></span>
+          </div>
+          <p class="muted legend-note" data-i18n="overlayLegend"></p>
+        </section>
+        <section class="card" aria-labelledby="solutions-heading">
+          <h2 id="solutions-heading" data-i18n="solutions">Remaining solutions</h2>
+          <p id="solutions-note" class="muted"></p>
+          <button type="button" id="clear-solution" data-i18n="clearSolution" hidden>Clear outline</button>
+          <div id="solutions-grid" class="solutions-grid"></div>
+        </section>
+        <details class="card help">
+          <summary data-i18n="howTo">How to use</summary>
+          <ul><li data-i18n="how1"></li><li data-i18n="how2"></li><li data-i18n="how3"></li><li data-i18n="how4"></li><li data-i18n="how5"></li></ul>
+        </details>
       </div>
-      <label>AI の持ち時間（秒）
-        <input id="ai-time" type="number" min="0.1" max="600" step="0.1" value="2" inputmode="decimal">
-      </label>
-      <label><input id="hint" type="checkbox"> 各マスの黒率を表示</label>
-      <label><input id="analyze" type="checkbox"> 解析：各マスの勝ち負けを表示</label>
-    </fieldset>
-
-    <section>
-      <h2>ルール</h2>
-      <ul>
-        <li>盤は 61 マスの六角形。ハニーアイランドの解（黒 25 マスで、白マスを 6 マスの島 6 つに分ける塗り方）は全部で 1,304,983 通りあります。</li>
-        <li>2 人が交互に、マスに黒石を 1 つ置きます。置いた石は「黒マス」として、残っている解を絞り込みます。</li>
-        <li>黒か白が確定したマス（残りのすべての解で同じ色のマス）には置けません（標準ルール）。</li>
-        <li>解が 1 つに決まったら、その石を置いた人の勝ちです。相手は置ける場所がなくなり負けになります。</li>
-        <li>「余剰ヒントあり」ルールでは、黒に確定したマスにも置けます。余剰ヒントを置いても解は変わらず、手番が相手に移ります。使えるのは「黒に確定したマスの数 − 置いた石の数」回までです。白に確定したマスには置けません（置くと解がなくなるため）。</li>
-      </ul>
-      <p class="legend">解析の表示：<span class="sw mwin"></span>勝ち（置くと相手が負け） <span class="sw mlose"></span>負け。定石を引き、無ければ AI の持ち時間の範囲で読み切ります。「？」は読み切れなかったマスです。文字の下の小さな「定」は定石から、「読」はその場で読み切った結果です。</p>
-      <p class="legend"><span class="sw stone"></span>置いた石 <span class="sw fb"></span>黒に確定 <span class="sw fw"></span>白に確定 <span class="sw free"></span>置ける</p>
-    </section>
-  </main>
+      <aside class="panel-column">
+        <section class="card" aria-labelledby="settings-heading">
+          <h2 id="settings-heading" data-i18n="settings">Settings</h2>
+          <fieldset><legend data-i18n="mode">Mode</legend>
+            <div id="mode" class="toggle" role="group" aria-label="Mode">
+              <button type="button" data-value="analyze" data-i18n="analyze">Analyze</button>
+              <button type="button" data-value="ai2" data-i18n="humanFirst">vs AI (you first)</button>
+              <button type="button" data-value="ai1" data-i18n="aiFirst">vs AI (AI first)</button>
+              <button type="button" data-value="aiai" data-i18n="aiAI">AI vs AI</button>
+            </div>
+          </fieldset>
+          <fieldset><legend data-i18n="rule">Rule</legend>
+            <div id="rule" class="toggle" role="group" aria-label="Rule">
+              <button type="button" data-value="normal" data-i18n="standard">Standard</button>
+              <button type="button" data-value="pass" data-i18n="passRule">Redundant hints</button>
+            </div>
+          </fieldset>
+          <label class="time"><span data-i18n="aiTime">AI time (seconds)</span><input id="ai-time" type="number" min="0.1" max="600" step="0.1" value="2" inputmode="decimal"></label>
+          <button type="button" id="resume" data-i18n="resume" hidden>Resume AI</button>
+        </section>
+        <section class="card" aria-labelledby="details-heading">
+          <h2 id="details-heading" data-i18n="positionDetails">Position details</h2>
+          <dl id="position-details"></dl>
+          <p id="position-value"></p><p id="value-source" class="muted"></p>
+          <button type="button" id="deeper" data-i18n="deeper">Solve deeper (4×)</button>
+        </section>
+        <section class="card" aria-labelledby="kifu-heading">
+          <h2 id="kifu-heading" data-i18n="kifu">Move list</h2>
+          <button type="button" id="initial" data-i18n="initial">Initial position</button>
+          <ol id="kifu" class="kifu"></ol>
+        </section>
+        <section class="card" aria-labelledby="moves-heading">
+          <h2 id="moves-heading" data-i18n="movesTable">Playable moves</h2>
+          <p class="muted" data-i18n="tableHelp"></p>
+          <div class="table-scroll">
+          <table id="moves-table">
+            <thead><tr>
+              <th scope="col" aria-sort="ascending"><button type="button" data-sort="cell" data-i18n="cell">Cell</button></th>
+              <th scope="col"><button type="button" data-sort="value" data-i18n="value">Value</button></th>
+              <th scope="col"><button type="button" data-sort="n" data-i18n="after">Left</button></th>
+              <th scope="col"><button type="button" data-sort="share" data-i18n="share">Share</button></th>
+            </tr></thead>
+            <tbody id="move-rows"></tbody>
+          </table>
+          </div>
+          <button type="button" id="play-selected" data-i18n="playSelected" disabled>Play selected cell</button>
+        </section>
+        <section class="card" aria-labelledby="sharing-heading">
+          <h2 id="sharing-heading" data-i18n="sharing">Share & import</h2>
+          <div class="row"><button type="button" id="copy-link" data-i18n="copyLink">Copy link</button><button type="button" id="copy-moves" data-i18n="copyMoves">Copy moves</button></div>
+          <form id="import-form">
+            <label for="import-moves" data-i18n="importLabel">Cell indices, separated by dots or commas</label>
+            <div class="row"><input id="import-moves" type="text" placeholder="12.40.7" autocomplete="off" spellcheck="false"><button type="submit" id="import" data-i18n="import">Import</button></div>
+          </form>
+          <label for="example" data-i18n="loadExample">Load example</label>
+          <select id="example"><option value="" data-i18n="chooseExample">Choose a perfect-play line…</option><option value="normal" data-i18n="normalExample">Standard · perfect play</option><option value="pass" data-i18n="passExample">Redundant hints · perfect play</option></select>
+        </section>
+      </aside>
+    </main>
+  </div>
+  <noscript>JavaScript is required. / JavaScript を有効にしてください。</noscript>
 </body>
 </html>

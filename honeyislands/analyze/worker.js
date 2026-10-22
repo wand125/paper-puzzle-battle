@@ -1,6 +1,8 @@
 import { WasmEngine } from './hib-wasm.js';
+import { N, loadSolutions, filterBlack } from './engine.js';
 
 let E = null;
+let solutionBytes = null, solutionSet = null;
 const RULES = ['normal', 'pass'];
 
 // download progress over all files: {kind: 'progress', loaded, total} (total 0 if unknown)
@@ -42,6 +44,7 @@ const ready = Promise.all([
   load('./data/solutions.bin', true),
   ...RULES.map(book),
 ]).then(async ([wasm, data, ...books]) => {
+  solutionBytes = data;
   E = await WasmEngine.create(wasm, data, (Math.random() * 2 ** 32) >>> 0);
   books.forEach((b, i) => { if (b) E.loadBook(b, RULES[i]); });
   postMessage({ kind: 'ready', total: E.total });
@@ -56,8 +59,30 @@ onmessage = async ({ data }) => {
     const legal = [];
     for (let c = 0; c < state.length; ++c) if (state[c] === 0.5) legal.push(c);
     postMessage({ kind: 'analysis', id: data.id, n: a.n, state, ratio: a.counts.map(c => (a.n ? c / a.n : 0)), legal });
+  } else if (data.kind === 'history') {
+    // Validate imports in order; never feed an illegal prefix to the UI.
+    const stones = [], moves = [];
+    let a = E.analyze(stones);
+    for (const c of data.stones) {
+      if (!Number.isInteger(c) || c < 0 || c >= N || stones.includes(c) || a.n <= 1) break;
+      const count = a.counts[c];
+      if (!count || (count === a.n && data.rule !== 'pass')) break;
+      moves.push({ cell: c, pass: count === a.n, n: count });
+      stones.push(c);
+      a = E.analyze(stones);
+    }
+    postMessage({ kind: 'history', id: data.id, moves, stopped: moves.length < data.stones.length });
+  } else if (data.kind === 'solutions') {
+    // The game never requests thumbnails, so only allocate the JS set on demand.
+    solutionSet ??= loadSolutions(solutionBytes);
+    let s = solutionSet;
+    for (const c of data.stones) s = filterBlack(s, c);
+    const limit = Number.isFinite(data.limit) ? Math.max(0, Math.min(64, Math.floor(data.limit))) : 64;
+    const masks = Array.from({ length: Math.min(limit, s.n) }, (_, i) => [s.lo[i], s.hi[i]]);
+    postMessage({ kind: 'solutions', id: data.id, n: s.n, masks });
   } else if (data.kind === 'eval') {
-    postMessage({ kind: 'eval', id: data.id, ...E.evaluate(data.stones, data.ms, data.rule) });
+    const token = data.evalId === undefined ? {} : { evalId: data.evalId };
+    postMessage({ kind: 'eval', id: data.id, ...token, ...E.evaluate(data.stones, data.ms, data.rule) });
   } else if (data.kind === 'think') {
     const r = E.think(data.stones, data.ms, undefined, data.rule);
     postMessage({ kind: 'move', id: data.id, ...r });

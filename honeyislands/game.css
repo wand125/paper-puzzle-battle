@@ -1,41 +1,41 @@
 :root {
   color-scheme: light;
   --bg: #fff;
-  --page: #dcebe1;
-  --surface: #f6f8f6;
-  --text: #171b18;
-  --muted: #566159;
-  --line: #d4dcd6;
-  --accent: #2e9e5b;
-  --accent-text: #20783f;
-  --tint: #e7f5ec;
+  --page: #fbf1d6;
+  --surface: #fffaf0;
+  --text: #3b2a1a;
+  --muted: #7a6450;
+  --line: #e7d6b6;
+  --accent: #e8a92a;
+  --accent-text: #8a5410;
+  --tint: #fdf0cf;
   --cell: #fff;
-  --cell-line: #86958b;
-  --determined-black: #505953;
-  --determined-white: #e9eeea;
+  --cell-line: #9c8a74;
+  --determined-black: #555;
+  --determined-white: #eae7e2;
   --stone: #111;
   --on-stone: #fff;
-  --shadow: 0 16px 70px #0002;
+  --shadow: 0 16px 70px #3b2a1a26;
 }
 
 :root[data-theme=dark] {
   color-scheme: dark;
-  --bg: #111612;
-  --page: #0b130e;
-  --surface: #1c231e;
-  --text: #eef4ef;
-  --muted: #a7b7ab;
-  --line: #3b493e;
-  --accent: #3fd07a;
-  --accent-text: #3fd07a;
-  --tint: #243d2c;
-  --cell: #f4f6f4;
-  --cell-line: #87958b;
-  --determined-black: #505953;
-  --determined-white: #a3b0a6;
-  --stone: #080b09;
+  --bg: #241a10;
+  --page: #1a120a;
+  --surface: #2c2014;
+  --text: #f5ead8;
+  --muted: #c4ad8e;
+  --line: #4a3824;
+  --accent: #f0b53a;
+  --accent-text: #f0b53a;
+  --tint: #3d2d14;
+  --cell: #f6f3ee;
+  --cell-line: #8a7860;
+  --determined-black: #555;
+  --determined-white: #b9b4ad;
+  --stone: #0a0a0a;
   --on-stone: #fff;
-  --shadow: 0 16px 70px #0008;
+  --shadow: 0 16px 70px #0009;
 }
 
 * { box-sizing: border-box; }
@@ -67,7 +67,7 @@ select { width: 100%; min-width: 0; padding: 9px 12px; }
 .rule-choice input { width: 20px; height: 20px; margin: 3px 0 0; flex-shrink: 0; accent-color: var(--accent-text); }
 .rule-choice strong { display: block; font-size: .94rem; }
 .rule-choice small { display: block; color: var(--muted); font-size: .8rem; margin-top: 2px; }
-.primary { background: var(--accent); border-color: var(--accent); color: #08190e; }
+.primary { background: var(--accent); border-color: var(--accent); color: #2a1800; }
 .primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.08); }
 .start { width: 100%; }
 .game { max-width: 620px; margin: auto; }
@@ -142,7 +142,7 @@ dialog.setup-dialog { width: min(560px, calc(100% - 24px)); text-align: left; pa
 .seg span { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); font-weight: 600; font-size: .9rem; cursor: pointer; text-align: center; }
 .seg label:hover span { border-color: var(--accent); }
 .seg input:checked + span { background: var(--accent-text); border-color: var(--accent-text); color: #fff; }
-:root[data-theme=dark] .seg input:checked + span { background: var(--accent); border-color: var(--accent); color: #0b130e; }
+:root[data-theme=dark] .seg input:checked + span { background: var(--accent); border-color: var(--accent); color: #2a1800; }
 .seg input:focus-visible + span, .rule-card input:focus-visible + .rule-body { outline: 3px solid var(--accent); outline-offset: 2px; }
 .seg input:disabled + span { cursor: default; }
 .field-note { margin: 6px 0 0; }
